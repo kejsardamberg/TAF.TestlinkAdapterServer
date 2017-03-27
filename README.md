@@ -6,7 +6,7 @@ For more information about TAF, visit the [TAF GitHub repo](https://github.com/c
 **Testlink** is an open source test and requirement management tool. More information about Testlink, and a demo version, can be found on the [Testlink site](http://testlink.org/ "Testlink web site").
 
 ## Schematic overview of TAF Testlink Adapter Server
-![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverview.png "Overview of how this adapter server works")
+![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverviewV2.png "Overview of how this adapter server works")
 
 ## How this adapter works
 The TAF test automation has a build in test runner and test listener. When a test run is finished a check is performed if the test run settings parameter called:
