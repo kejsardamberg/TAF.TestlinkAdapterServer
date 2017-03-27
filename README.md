@@ -72,4 +72,7 @@ Another way is programatically, by adding the Testlink adapter, like in the exam
 
 Doing this will engage the reporting to this adapter.
 
+## More information
+For more information, clone this repo, or [download the Javadocs](http://46.101.193.212/TAF/bin/TafTestlinkAdapterServer-javadoc.jar "Javadocs for TAF Testlink Adapter Server").
+
 gl:hf
