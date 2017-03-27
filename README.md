@@ -5,6 +5,24 @@ For more information about TAF, visit the [TAF GitHub repo](https://github.com/c
 
 **Testlink** is an open source test and requirement management tool. More information about Testlink, and a demo version, can be found on the [Testlink site](http://testlink.org/ "Testlink web site").
 
+## What this adapter does
+The adapter takes the test results from a test run in TAF and pushes it as test results in Testlink.
+![TestlinkView](http://46.101.193.212/TAF/images/TafTestlinkAdapterServer/TafTestlinkAdapterServerTestlinkView.PNG "Testlink execution view")
+*Testlink execution view*
+
+Testlink test cases are identified and test results from TAF execution is reported to that test case, or a test case is created in Testlink if no matching test case can be identified.
+
+![LogAsNotes](http://46.101.193.212/TAF/images/TafTestlinkAdapterServer/TafTestlinkAdapterServerTafLogAsNotes.PNG "TAF test case log as Testlink test case notes")
+*Testlink view of TAF test case log being populated as Testlink test case testing notes*
+
+The test case execution log can be seen in Testlink, in the test case notes field.
+
+![AdapterAboutPage](http://46.101.193.212/TAF/images/TafTestlinkAdapterServer/TafTestlinkAdapterServerAboutPageExample.PNG "TAF Testlink Adapter About page")
+*The about page of TAF Testlink Adapter Server*
+
+The web interface of the adapter is very limited, but views run status and general information. The REST interface is also quite simple, and only allows for posting of test run results from TAF.
+
+
 ## Schematic overview of TAF Testlink Adapter Server
 ![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServer/TafTestlinkAdapterServerOverviewV2.png "Overview of how this adapter server works")
 
