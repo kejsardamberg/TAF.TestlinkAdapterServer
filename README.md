@@ -1,4 +1,4 @@
-# Taf Testlink Adapter Server
+# TAF Testlink Adapter Server
 **The TAF Testlink Adapter Server** is a proxy server for pushing test case results from a TAF test execution to *Testlink*. It require some parameters to start this TAF Testlink Adapter Server, and one minor addition to your TAF tests.
 
 For more information about TAF, visit the [TAF GitHub repo](https://github.com/claremontqualitymanagement/TestAutomationFramework "TAF on GitHub").
