@@ -5,6 +5,9 @@ For more information about TAF, visit the [TAF GitHub repo](https://github.com/c
 
 **Testlink** is an open source test and requirement management tool. More information about Testlink, and a demo version, can be found on the [Testlink site](http://testlink.org/ "Testlink web site").
 
+## Schematic overview of TAF Testlink Adapter Server
+![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverview.png "Overview")
+
 ## Usage example
 *The TAF Testlink Adapter Server* is started from the command line with a few parameters.
 
@@ -58,8 +61,5 @@ Another way is programatically, by adding the Testlink adapter, like in the exam
 ```
 
 Doing this will engage the reporting to this adapter.
-
-## Schematic overview of TAF Testlink Adapter Server
-![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverview.png "Overview")
 
 gl:hf
