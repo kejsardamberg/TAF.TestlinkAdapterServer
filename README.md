@@ -30,10 +30,10 @@ The *TAF Testlink Adapter Server* also has a built in cache for Testlink resourc
 
 ## Getting the TAF Testlink Adapter Server started
 A few command line parameters are needed at *TAF Testlink Adapter Server* startup:
-  * `port=2222` (Port number is of your own choice. Make sure it is not the same as the Testlink server uses.
+  * `port=2222` (Port number is of your own choice. Make sure it is not the same as the Testlink server uses. Default port is 81.)
   * `username=taftestlinkuser` (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink.
-  * `testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php` (make sure the full adress to the Testlink API is there)
-  * `devkey=2a861343a3dca60b876ca5b6567568de` (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)
+  * `testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php` (Make sure the full adress to the Testlink API is there. Default is local host, at TCP port 80.)
+  * `devkey=2a861343a3dca60b876ca5b6567568de` (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'. The key in this example is only an example, so you know what to look for.)
 
 All of these run time parameters are case insensitive and the order of them are irrelevant.
 
