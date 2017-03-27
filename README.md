@@ -33,6 +33,13 @@ The *TAF Testlink Adapter Server* also has a built in cache for Testlink resourc
 The server will continuously present output while performing its tasks.
 
 # Get started
+Four things are required to get this adapter working.
+1. **Pre-requisites** Make sure you have a test automation in a TAF with a version of 2.5.24 or later. Make sure you have the host name or IP address of your Testlink installation.
+2. Get hold of a **TafTestlinkAdapterServer.jar** file.
+3. Start your TafTestlinkAdapterServer.jar with appropriate parameters.
+4. Modify your TAF test setup to include Testlink reporting.
+
+All of those steps will be walked through below.
 
 ## Achieve a jar
 There are two ways of getting started with this adapter server.
@@ -59,8 +66,11 @@ Default TCP port is 80. The important part is that it should not be a port in us
 ## Modifications on the TAF tests
 You need to set the setting called `URL_TO_TESTLINK_ADAPTER` on your test execution. One way of doing this is from the command line when starting your TAF test run.
 
+### Via command line interface at test run execution
+
      java -jar TafFull.jar MyTestClasses URL_TO_TESTLINK_ADAPTER=http://localhost:2222/taftestlinkadapter
 
+### Programatically in your TAF tests
 Another way is programatically, by adding the Testlink adapter, like in the example below.
 ```java
     @BeforeClass
