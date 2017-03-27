@@ -108,7 +108,7 @@ where port number is the *TAF Testlink Adapter Server* port number for TAF to co
 Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server.
 
 ## 5. Modifications on the TAF tests
-You need to set the setting called `URL_TO_TESTLINK_ADAPTER` on your test execution. One way of doing this is from the command line when starting your TAF test run.
+You need to set the setting called `URL_TO_TESTLINK_ADAPTER` on your test execution. There are several ways of doing this, as there are severa ways of changing or setting TAF test run parameters. The three most common ones are listed below.
 
 ### 5a). Via command line interface at test run execution
 
