@@ -2,7 +2,6 @@ package se.claremont.taftestlinkadapter.webpages;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import se.claremont.taftestlinkadapter.server.Settings;
 
 /**
  * Shared components for web pages
@@ -65,8 +64,8 @@ public class CommonSections {
         sb.append("<a href=\"http://www.claremont.se\"><img class=\"toplogo\" src=\"http://46.101.193.212/TAF/images/claremontlogo.gif\"></a>").append(System.lineSeparator());
         sb.append("<div class=\"topmenu\">");
         sb.append("<a href=\"taftestlinkadapter\"><span class=\"topmenuelement\"><i class=\"fa fa-home\"></i> Start</span></a>");
-        sb.append("<a href=\"taftestlinkadapter/").append(Settings.currentApiVersion).append("/testruns\"><span class=\"topmenuelement\">Test run listing</span></a>");
-        sb.append("<a href=\"taftestlinkadapter/about\"><span class=\"topmenuelement\">About</span></a>");
+        //sb.append("<a href=\"taftestlinkadapter/").append(Settings.currentApiVersion).append("/testruns\"><span class=\"topmenuelement\">Test run listing</span></a>");
+        //sb.append("<a href=\"taftestlinkadapter/about\"><span class=\"topmenuelement\">About</span></a>");
         sb.append("</div>").append(System.lineSeparator());
         return sb.toString();
 

@@ -58,7 +58,7 @@ public class HttpServer {
         }
     }
 
-    private String getIPAddressesOfLocalMachine(){
+    public static String getIPAddressesOfLocalMachine(){
         String ip = "Could not identify local IP address.";
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
