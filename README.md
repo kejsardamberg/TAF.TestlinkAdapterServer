@@ -17,7 +17,9 @@ If this settings value is changed from its original value (for the record: It is
 
 *The TAF Testlink Adapter Server* has a few REST interfaces, and can display a few web pages. 
 
-The TAF test execution run results are formatted to JSON data format and POSTed to the *TAF Testlink Adapter Server* REST API.
+The TAF test execution run results are formatted to JSON data format and POST:ed to the *TAF Testlink Adapter Server* REST API.
+
+### Testlink test case identification sequence
 *The TAF Testlink Adapter Server* then connects to the Testlink server and tries to identify the test cases to report results to. The identification sequence is as follows: 
 1. If a test case with a name corresponding to the TAF test case in the test run is found, and either the Testlink test suite name or the Testlink test plan name for that test case has a name containing the TAF test case test set name, reporting will be performed to that test case.
 2. If only one Testlink test case with a name corresponding to the TAF test case is found reporting will be performed to that Testlink test case.
@@ -26,7 +28,16 @@ The TAF test execution run results are formatted to JSON data format and POSTed 
 
 Test case reporting is always performed againt the latest Testlink build for the Testlink test plan.
 
-The *TAF Testlink Adapter Server* also has a built in cache for Testlink resources, since lookup of these are quite slow. If it seem to behave badly, try restarting the server. The server will continuously present output while performing its tasks.
+The *TAF Testlink Adapter Server* also has a built in cache for Testlink resources, since lookup of these are quite slow. Although this should not bring any problems, if the adapter seem to behave badly, try restarting the adapter. 
+
+The server will continuously present output while performing its tasks.
+
+# Get started
+
+## Achieve a jar
+There are two ways of getting started with this adapter server.
+1. Either clone this repository and build it to a jar file. Maven will do this for you if you have maven installed.
+2. [Download](http://46.101.193.212/TAF/bin/TafTestlinkAdapterServer.jar "TAF Testlink Adapter Server jar file download") a readily built jar file and place it in a folder of your choice on your machine. The adapter server will produce a log file in the same directory.
 
 ## Getting the TAF Testlink Adapter Server started
 A few command line parameters are needed at *TAF Testlink Adapter Server* startup:
