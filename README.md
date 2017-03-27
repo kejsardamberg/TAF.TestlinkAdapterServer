@@ -1,21 +1,23 @@
 # Taf Testlink Adapter Server
-The TAF Testlink Adapter Server is a proxy server for pushing test case results from a TAF test execution to Testlink.
+The TAF Testlink Adapter Server is a proxy server for pushing test case results from a TAF test execution to Testlink. It require some parameters to start this TAF Testlink Adapter Server, and one minor addition to your TAF tests.
 
-## Usage example:
-java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser
+For more information about TAF, visit the TAF GitHub repo: https://github.com/claremontqualitymanagement/TestAutomationFramework
+
+## Usage example
+The TAF Testlink Adapter Server is started from the command line with a few parameters.
+
+     java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser
 
 where port number is the TAF Testlink Adapter Server port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter).
 Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server.
 
-This server is used as a proxy between a Testlink server and a TAF test automation. 
-It require some parameters to start this TAF Testlink Adapter Server, and one minor addition to your TAF tests.
 
 ## How this adapter works
 The TAF test automation has a build in test runner and test listener. When a test run is finished a check is performed if the test run settings parameter called:
 
     TestRun.setSettingsValue(Settings.SettingParameters.URL_TO_TESTLINK_ADAPTER, "http://127.0.0.1:2221/taftestlinkadapter");
 
-is changed from its original value (for the record: It is meant to substitute the address and port to your own ones in the line above).If it is actively set to something other than its default value an attempt to push the test result to the TAF Testlink Adapter Server will be performed. 
+If this settings value is changed from its original value (for the record: It is meant to substitute the address and port to your own ones in the line above).If it is actively set to something other than its default value an attempt to push the test result to the TAF Testlink Adapter Server will be performed. 
 
 The TAF Testlink Adapter Server has a few REST interfaces, and can display a few web pages. 
 
@@ -43,18 +45,20 @@ The TAF Testlink Adapter Server also has a built in cache for Testlink resources
 
 ## Getting the TAF Testlink Adapter Server started
 A few command line parameters are needed at TAF Testlink Adapter Server startup:
-  port=2222 (Port number is of your own choice. Make sure it is not the same as the Testlink server uses.
-  username=taftestlinkuser (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink.
-  testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php (make sure the full adress to the Testlink API is there)
-  devkey=2a861343a3dca60b876ca5b6567568de (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)
+  * port=2222 (Port number is of your own choice. Make sure it is not the same as the Testlink server uses.
+  * username=taftestlinkuser (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink.
+  * testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php (make sure the full adress to the Testlink API is there)
+  * devkey=2a861343a3dca60b876ca5b6567568de (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)
 
 All of these run time parameters are case insensitive and the order of them are irrelevant.
 
 ##Modifications on the TAF tests
-You need to set the setting called 'URL_TO_TESTLINK_ADAPTER' on your test execution. One way of doing this is from the command line when starting your TAF test run:
-   java -jar TafFull.jar MyTestClasses URL_TO_TESTLINK_ADAPTER=http://localhost:2222/taftestlinkadapter
+You need to set the setting called 'URL_TO_TESTLINK_ADAPTER' on your test execution. One way of doing this is from the command line when starting your TAF test run.
 
-Another way is programatically by adding for example:
+     java -jar TafFull.jar MyTestClasses URL_TO_TESTLINK_ADAPTER=http://localhost:2222/taftestlinkadapter
+
+Another way is programatically, by adding the Testlink adapter, like in the example below.
+
     @BeforeClass
     public static void setup(){
         TestRun.setSettingsValue(Settings.SettingParameters.URL_TO_TESTLINK_ADAPTER, "http://127.0.0.1:2221/taftestlinkadapter");
