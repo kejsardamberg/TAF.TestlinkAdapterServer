@@ -23,21 +23,10 @@ The TAF Testlink Adapter Server has a few REST interfaces, and can display a few
 
 The TAF test execution run results are formatted to JSON data format and POSTed to the TAF Testlink Adapter Server REST API.
 The TAF Testlink Adapter Server then connects to the Testlink server and tries to identify the test cases to report results to. The identification sequence is as follows: 
-  1). If a test case with a name corresponding to the TAF test case in the test 
-      run is found, and either the Testlink test suite name or the Testlink test 
-      plan name for that test case has a name containing the TAF test case test 
-      set name, reporting will be performed to that test case.
-
-  2). If only one Testlink test case with a name corresponding to the TAF test 
-      case is found reporting will be performed to that Testlink test case.
-
-  3). If several test cases with corresponding names are found reporting 
-      will be performed to the first test case encountered.
-
-  4). If no corresponding test case is found at all in Testlink a new one will 
-      be created, but in a Testlink test project called 'Test automation project'
-      and a test plan named 'Automated regression tests' and a Testlink test 
-      suite named after the TAF test case test set name.
+* If a test case with a name corresponding to the TAF test case in the test run is found, and either the Testlink test suite name or the Testlink test plan name for that test case has a name containing the TAF test case test set name, reporting will be performed to that test case.
+* If only one Testlink test case with a name corresponding to the TAF test case is found reporting will be performed to that Testlink test case.
+* If several test cases with corresponding names are found reporting will be performed to the first test case encountered.
+* If no corresponding test case is found at all in Testlink a new one will be created, but in a Testlink test project called 'Test automation project' and a test plan named 'Automated regression tests' and a Testlink test suite named after the TAF test case test set name.
 
 Test case reporting is always performed againt the latest Testlink build for the Testlink test plan.
 
@@ -52,7 +41,7 @@ A few command line parameters are needed at TAF Testlink Adapter Server startup:
 
 All of these run time parameters are case insensitive and the order of them are irrelevant.
 
-##Modifications on the TAF tests
+## Modifications on the TAF tests
 You need to set the setting called 'URL_TO_TESTLINK_ADAPTER' on your test execution. One way of doing this is from the command line when starting your TAF test run.
 
      java -jar TafFull.jar MyTestClasses URL_TO_TESTLINK_ADAPTER=http://localhost:2222/taftestlinkadapter
