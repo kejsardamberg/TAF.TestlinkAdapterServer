@@ -22,7 +22,7 @@ public class App {
                 "Usage example:" + System.lineSeparator() +
                 "java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser'" + System.lineSeparator() +
                 "where port number is the TAF Testlink Adapter Server port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter)." + System.lineSeparator() +
-                "Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server." + System.lineSeparator() +
+                "Default TCP port is 81 - chosen not to collide with potential Testlink installation on default http port 80 the same machine. The important part is that it should not be a port in use already, by Testlink or other web server." + System.lineSeparator() +
                 System.lineSeparator() +
                 "If you want to understand how TAF Testlink Adapter Server works, and should be applied, use the switch:" + System.lineSeparator() + System.lineSeparator() +
                 "   java -jar TafTestlinkAdapterServer.jar info" + System.lineSeparator() + System.lineSeparator();
