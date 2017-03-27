@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>se.claremont</groupId>
+    <artifactId>TafTestlinkAdapterServer</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <name>TafBackend</name>
+    <description>TAF Testlink Adapter Server - Gateway/proxy solution for bringing test run results from TAF to Testlink</description>
+    <url>http://www.claremont.se</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <capability.jetty.version>9.4.2.v20170220</capability.jetty.version>
+        <capability.glassfish.version>2.23.2</capability.glassfish.version>
+        <capability.hk2.version>2.5.0-b36</capability.hk2.version>
+        <jackson.version>2.6.3</jackson.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <repositories>
+        <!-- TODO: we should only use these repos since TravisCI uses them  -->
+        <repository>
+            <id>TheCentralRepository</id>
+            <name>TheCentralRepository</name>
+            <url>http://search.maven.org</url>
+        </repository>
+        <repository>
+            <id>Sonartype</id>
+            <name>Sonartype</name>
+            <url>https://oss.sonatype.org</url>
+        </repository>
+        <repository>
+            <id>claremontqualitymanagement</id>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <url>https://github.com/claremontqualitymanagement/TestAutomationFramework</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <!-- TODO: we should only use these repos since TravisCI uses them  -->
+        <pluginRepository>
+            <id>TheCentralRepository</id>
+            <name>TheCentralRepository</name>
+            <url>http://search.maven.org</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>Sonartype</id>
+            <name>Sonartype</name>
+            <url>https://oss.sonatype.org</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>github</id>
+            <name>github</name>
+            <url>https://github.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>com.github.claremontqualitymanagement.TestAutomationFramework</id>
+            <name>TestAutomationFramework</name>
+            <url>https://github.com/claremontqualitymanagement/TestAutomationFramework</url>
+        </repository>
+    </distributionManagement>
+
+    <dependencies>
+
+        <!-- Jetty (Light weight web server) -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-continuation</artifactId>
+            <version>${capability.jetty.version}</version>
+        </dependency>
+
+        <!-- Jersey HTTP manager -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.bundles.repackaged</groupId>
+            <artifactId>jersey-guava</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-jetty-http</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>${capability.glassfish.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.glassfish.jersey/jax-rs-ri -->
+        <dependency>
+            <groupId>org.glassfish.jersey</groupId>
+            <artifactId>jax-rs-ri</artifactId>
+            <version>2.0-rc1</version>
+        </dependency>
+
+        <!-- HK2 (Dependency injection framework) -->
+        <dependency> <!-- Needed? -->
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-core</artifactId>
+            <version>${capability.hk2.version}</version>
+        </dependency>
+        <dependency> <!-- Needed? -->
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2</artifactId>
+            <version>${capability.hk2.version}</version>
+        </dependency>
+        <dependency> <!-- Needed? -->
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-api</artifactId>
+            <version>${capability.hk2.version}</version>
+        </dependency>
+        <dependency> <!-- Needed? -->
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-locator</artifactId>
+            <version>${capability.hk2.version}</version>
+        </dependency>
+        <dependency> <!-- Needed? -->
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-utils</artifactId>
+            <version>${capability.hk2.version}</version>
+        </dependency>
+
+        <!-- JavaX -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2-b02</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+        </dependency>
+
+        <!-- JSON object mapper -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Used to propagate test results to Testlink -->
+        <dependency>
+            <groupId>br.eti.kinoshita</groupId>
+            <artifactId>testlink-java-api</artifactId>
+            <version>1.9.14-0</version>
+        </dependency>
+
+        <!-- Test runner for unit test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- TAF, needed for JSON to object mapping -->
+        <dependency>
+            <groupId>com.github.claremontqualitymanagement</groupId>
+            <artifactId>TestAutomationFramework</artifactId>
+            <version>2.5.24</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>TafTestlinkAdapterServer</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!-- Create Javadoc for project -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Making source available -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>go-framework-assemby</id>
+                        <phase>package</phase><!-- create assembly in package phase (invoke 'single' goal on assemby plugin)-->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assemble/taf_bin.xml</descriptor>
+                            </descriptors>
+                            <!-- build name by maven default -->
+                            <!--<finalName>TafFull</finalName>-->
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>se.claremont.taftestlinkadapter.server.App</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
