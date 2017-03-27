@@ -59,4 +59,7 @@ Another way is programatically, by adding the Testlink adapter, like in the exam
 
 Doing this will engage the reporting to this adapter.
 
+## Schematic overview of TAF Testlink Adapter Server
+![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverview.png "Overview")
+
 gl:hf
