@@ -86,3 +86,5 @@ Doing this will engage the reporting to this adapter.
 For more information, clone this repo, or [download the Javadocs](http://46.101.193.212/TAF/bin/TafTestlinkAdapterServer-javadoc.jar "Javadocs for TAF Testlink Adapter Server").
 
 gl:hf
+
+![ClaremontLogo](http://46.101.193.212/TAF/images/claremontlogo.gif "Claremont logo")
