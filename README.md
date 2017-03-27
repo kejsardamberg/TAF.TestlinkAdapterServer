@@ -8,15 +8,6 @@ For more information about TAF, visit the [TAF GitHub repo](https://github.com/c
 ## Schematic overview of TAF Testlink Adapter Server
 ![Schematic overview of TAF Testlink Adapter Server workings](http://46.101.193.212/TAF/images/TafTestlinkAdapterServerOverview.png "Overview")
 
-## Usage example
-*The TAF Testlink Adapter Server* is started from the command line with a few parameters.
-
-     java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser
-
-where port number is the *TAF Testlink Adapter Server* port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter).
-Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server.
-
-
 ## How this adapter works
 The TAF test automation has a build in test runner and test listener. When a test run is finished a check is performed if the test run settings parameter called:
 
@@ -45,6 +36,14 @@ A few command line parameters are needed at *TAF Testlink Adapter Server* startu
   * `devkey=2a861343a3dca60b876ca5b6567568de` (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)
 
 All of these run time parameters are case insensitive and the order of them are irrelevant.
+
+### Usage example
+*The TAF Testlink Adapter Server* is started from the command line with a few parameters.
+
+     java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser
+
+where port number is the *TAF Testlink Adapter Server* port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter).
+Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server.
 
 ## Modifications on the TAF tests
 You need to set the setting called `URL_TO_TESTLINK_ADAPTER` on your test execution. One way of doing this is from the command line when starting your TAF test run.
