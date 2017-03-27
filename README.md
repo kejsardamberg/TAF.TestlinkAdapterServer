@@ -51,20 +51,46 @@ The *TAF Testlink Adapter Server* also has a built in cache for Testlink resourc
 The server will continuously present output while performing its tasks.
 
 # Get started
-Four things are required to get this adapter working.
+Five things are required to get this adapter working.
 1. **Pre-requisites** Make sure you have a test automation in a TAF with a version of 2.5.24 or later. Make sure you have the host name or IP address of your Testlink installation.
 2. Get hold of a **TafTestlinkAdapterServer.jar** file.
-3. Start your TafTestlinkAdapterServer.jar with appropriate parameters.
-4. Modify your TAF test setup to include Testlink reporting.
+3. Make sure you have at least java version 1.8 installed.
+4. Start your TafTestlinkAdapterServer.jar with appropriate parameters.
+5. Modify your TAF test setup to include Testlink reporting.
 
 All of those steps will be walked through below.
 
-## Achieve a jar
+## 1. Check your TAF version
+In your test automation project, open the `pom.xml` file and look for a section like
+```pom
+        <dependency>
+            <groupId>com.github.claremontqualitymanagement</groupId>
+            <artifactId>TestAutomationFramework</artifactId>
+            <version>2.5.24</version>
+        </dependency>
+```
+
+Make sure the version is at least 2.5.24.
+
+If your are running tests from the command line interface the TAF version is also visible in HTML summary reports for test runs.
+
+
+## 2. Achieve a jar
 There are two ways of getting started with this adapter server.
 1. Either clone this repository and build it to a jar file. Maven will do this for you if you have maven installed.
 2. [Download](http://46.101.193.212/TAF/bin/TafTestlinkAdapterServer.jar "TAF Testlink Adapter Server jar file download") a readily built jar file and place it in a folder of your choice on your machine. The adapter server will produce a log file in the same directory.
 
-## Getting the TAF Testlink Adapter Server started
+
+## 3. Check your java version
+Open a command prompt and write
+```
+java -version
+```
+When you press **enter** you'll be presented with the java version installed in your operating system. If you don't, either your java installation is not in your operating system path variable (this variable tells your operating system where to look for files when they are not in the current folder) or maybe you don't have java installed at all. Java is free of charge, and can be downloaded.
+
+Make sure your java is at least version 1.8.
+
+## 4. Getting the TAF Testlink Adapter Server started
 A few command line parameters are needed at *TAF Testlink Adapter Server* startup:
   * `port=2222` (Port number is of your own choice. Make sure it is not the same as the Testlink server uses. Default port is 81.)
   * `username=taftestlinkuser` (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink.
@@ -81,14 +107,14 @@ All of these run time parameters are case insensitive and the order of them are 
 where port number is the *TAF Testlink Adapter Server* port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter).
 Default TCP port is 80. The important part is that it should not be a port in use already, by Testlink or other web server.
 
-## Modifications on the TAF tests
+## 5. Modifications on the TAF tests
 You need to set the setting called `URL_TO_TESTLINK_ADAPTER` on your test execution. One way of doing this is from the command line when starting your TAF test run.
 
-### Via command line interface at test run execution
+### 5a). Via command line interface at test run execution
 
      java -jar TafFull.jar MyTestClasses URL_TO_TESTLINK_ADAPTER=http://localhost:2222/taftestlinkadapter
 
-### Programatically in your TAF tests
+### 5b). Programatically in your TAF tests
 Another way is programatically, by adding the Testlink adapter, like in the example below.
 ```java
     @BeforeClass
@@ -98,7 +124,10 @@ Another way is programatically, by adding the Testlink adapter, like in the exam
    }
 ```
 
-Doing this will engage the reporting to this adapter.
+### 5c). Editing the `runSettings.properties` file
+Test run settings can be set in a TAF run file. Setting the value of `URL_TO_TESTLINK_ADAPTER` in this file will engage the TafBackendTestRunReporter. 
+
+Either way of updating the `URL_TO_TESTLINK_ADAPTER` settings value will engage the reporting to this adapter.
 
 ## More information
 For more information, clone this repo, or [download the Javadocs](http://46.101.193.212/TAF/bin/TafTestlinkAdapterServer-javadoc.jar "Javadocs for TAF Testlink Adapter Server").
