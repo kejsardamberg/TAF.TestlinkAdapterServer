@@ -75,6 +75,10 @@ public class App {
                         "  username=taftestlinkuser (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink." + System.lineSeparator() +
                         "  testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php (make sure the full adress to the Testlink API is there)" + System.lineSeparator() +
                         "  devkey=2a861343a3dca60b876ca5b6567568de (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)" + System.lineSeparator() +
+                        "  defaultTestProject=AutoTestProject (makes test results for test cases that cannot be identified in Testlink be reported into this project)" + System.lineSeparator() +
+                        "  defaultTestSuite=AutoTestOrphanTestCases (makes test results for test cases that cannot be identified in Testlink be reported to test cases in this test suite)" + System.lineSeparator() +
+                        "  defaultTestPlan=AutoTestPlan (makes test results for test cases that cannot be identified in Testlink be reported to test cases, and build, within this test plan)" + System.lineSeparator() +
+                        "  connectionTimeout=15 (sets the connection timeout for Testlink server connection to 15 seconds." + System.lineSeparator() +
                         System.lineSeparator() +
                         "All of these run time parameters are case insensitive and the order of them are irrelevant." + System.lineSeparator() +
                         System.lineSeparator() +
@@ -115,7 +119,7 @@ public class App {
             if(arg.contains("=")){
                 if(arg.split("=")[0].toLowerCase().equals("devkey")){
                     String testlinkDevKey = arg.split("=")[1];
-                    System.out.println("Setting Testlink devkey to " + testlinkDevKey + "." + System.lineSeparator());
+                    System.out.println("Setting Testlink devkey to " + testlinkDevKey + ".");
                     Settings.testlinkDevKey = testlinkDevKey;
                 }
             }
@@ -127,7 +131,7 @@ public class App {
             if(arg.contains("=")){
                 if(arg.split("=")[0].toLowerCase().equals("username")){
                     String testlinkUserName= arg.split("=")[1];
-                    System.out.println("Setting Testlink user name to " + testlinkUserName + "." + System.lineSeparator());
+                    System.out.println("Setting Testlink user name to " + testlinkUserName + ".");
                     Settings.testlinkUserName = testlinkUserName;
                 }
             }
@@ -146,14 +150,64 @@ public class App {
         }
     }
 
+    private static void setDefaultTestProjectIfStatedAsAParameter(String[] args){
+        for(String arg: args){
+            if(arg.contains("=")){
+                if(arg.split("=")[0].toLowerCase().equals("defaulttestproject") && arg.split("=").length > 1 && arg.split("=")[1].trim().length() > 0){
+                    System.out.println("Setting default Testlink test project to " + arg.split("=")[1]);
+                    Settings.defaultTestProjectNameForNewTestCases = arg.split("=")[1];
+                }
+            }
+        }
+    }
+
+    private static void setDefaultTestSuiteIfStatedAsAParameter(String[] args){
+        for(String arg: args){
+            if(arg.contains("=")){
+                if(arg.split("=")[0].toLowerCase().equals("defaulttestsuite") && arg.split("=").length > 1 && arg.split("=")[1].trim().length() > 0){
+                    System.out.println("Setting default Testlink test suite to " + arg.split("=")[1]);
+                    Settings.defaultTestSuiteNameForNewTestCases= arg.split("=")[1];
+                }
+            }
+        }
+    }
+
+    private static void setConnectionTimeoutIfStatedAsAParameter(String[] args){
+        for(String arg: args){
+            if(arg.contains("=")){
+                if(arg.split("=")[0].toLowerCase().equals("connectiontimeout") && arg.split("=").length > 1 && arg.split("=")[1].trim().length() > 0){
+                    System.out.println("Setting Testlink server connection timeout to " + arg.split("=")[1]);
+                    Settings.testlinkServerConnectionTimeoutInSeconds= arg.split("=")[1];
+                }
+            }
+        }
+    }
+
+    private static void setDefaultTestPlanIfStatedAsAParameter(String[] args){
+        for(String arg: args){
+            if(arg.contains("=")){
+                if(arg.split("=")[0].toLowerCase().equals("defaulttestplan") && arg.split("=").length > 1 && arg.split("=")[1].trim().length() > 0){
+                    System.out.println("Setting default Testlink test plan to " + arg.split("=")[1]);
+                    Settings.defaultTestPlanName = arg.split("=")[1];
+                }
+            }
+        }
+    }
+
+
     public static void main(String[] args){
         //originalOutputChannel = System.out;
         System.out.println(helpText());
         printInfoIfSwitchIsFound(args);
+        System.out.println("Processing " + args.length + " runtime arguments.");
         setAddress(args);
         setDevKey(args);
         setUserName(args);
         setPortIfStatedAsParameter(args);
+        setDefaultTestProjectIfStatedAsAParameter(args);
+        setDefaultTestPlanIfStatedAsAParameter(args);
+        setDefaultTestSuiteIfStatedAsAParameter(args);
+        setConnectionTimeoutIfStatedAsAParameter(args);
         if(Settings.testlinkDevKey == null || Settings.testlinkServerAddress == null || Settings.testlinkUserName == null){
             System.out.println("Cannot start server. Required parameter missing.");
             return;
@@ -177,4 +231,36 @@ public class App {
             server.stop();
         }
     }
+
+
+
+    /*
+    private static boolean checkTestlinkServerConnection() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> future = executor.submit(new ConnectionTester());
+        boolean connected = false;
+        try {
+            System.out.print("Checking connection to Testlink server. ");
+            System.out.println(future.get(10, TimeUnit.SECONDS));
+            connected = true;
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            System.out.println("Connection could not be established.");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        executor.shutdownNow();
+        return connected;
+    }
+
+    private static class ConnectionTester implements Callable<String> {
+        @Override
+        public String call() throws Exception{
+            TestlinkClient client = new TestlinkClient();
+            return "Connection established.";
+        }
+    }
+    */
 }

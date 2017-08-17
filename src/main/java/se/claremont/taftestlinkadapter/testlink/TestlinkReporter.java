@@ -1,13 +1,15 @@
 package se.claremont.taftestlinkadapter.testlink;
 
-import br.eti.kinoshita.testlinkjavaapi.constants.*;
-import br.eti.kinoshita.testlinkjavaapi.model.*;
+import br.eti.kinoshita.testlinkjavaapi.constants.ExecutionStatus;
+import br.eti.kinoshita.testlinkjavaapi.constants.TestCaseDetails;
+import br.eti.kinoshita.testlinkjavaapi.model.TestCase;
+import br.eti.kinoshita.testlinkjavaapi.model.TestPlan;
+import br.eti.kinoshita.testlinkjavaapi.model.TestProject;
+import br.eti.kinoshita.testlinkjavaapi.model.TestSuite;
 import br.eti.kinoshita.testlinkjavaapi.util.TestLinkAPIException;
-import se.claremont.taftestlinkadapter.cache.TestlinkCache;
 import se.claremont.taftestlinkadapter.server.Settings;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Interacts with the Testlink server. Possible partial over-lap with TestRunRegistration class.
@@ -16,7 +18,6 @@ import java.util.List;
  */
 @SuppressWarnings("SameParameterValue")
 public class TestlinkReporter {
-    ArrayList<String> projects = new ArrayList<>();
     boolean success = true;
     boolean hasReportedConfigText = false;
     public TestlinkClient api = null;
@@ -27,18 +28,23 @@ public class TestlinkReporter {
      */
     @SuppressWarnings("ConstantConditions")
     public TestlinkReporter(){
-        String about = null;
         try {
-            api = new TestlinkClient(Settings.testlinkServerAddress, Settings.testlinkDevKey);
+            log("TestlinkReporter is using address '" + Settings.testlinkServerAddress + "'.");
+            api = new TestlinkClient();
             if(api == null || api.api == null) {
                 success = false;
+                log("Testlink reporter became null. This should not happen.");
             }
             //about = api.about().toString();
         } catch (Exception e) {
             log("Could not connect to Testlink at url '" + Settings.testlinkServerAddress + "' with the supplied devKey '" + Settings.testlinkDevKey + "'. " + e.getMessage());
             success = false;
         }
-        this.projects = testlinkProjects();
+        if(success){
+            log("Created TestlinkReporter successfully.");
+        } else {
+            log("Could not create Testlink reporter.");
+        }
     }
 
 
@@ -63,46 +69,6 @@ public class TestlinkReporter {
         return sb.toString();
     }
 
-    public void resetSuccessToTrue(){
-        this.success = true;
-    }
-
-    /**
-     * Reports the result of a test case to Testlink.
-     *
-     */
-    public boolean evaluateTestCase(String testProjectName, String testPlanName, String testSuiteName, String buildName, String testName, String notes, String results, boolean createTestCaseInTestlinkIfItDoesNotExistThere){
-        TestlinkTestResult testResult = new TestlinkTestResult(testProjectName, testPlanName, testSuiteName, buildName, testName, notes, results);
-        if(apiIsNotReady()) {
-            reportApiProblem(testName);
-            //return;
-        }
-        if(createTestCaseInTestlinkIfItDoesNotExistThere)
-            createTestCaseInTestlinkIfNotExistThere(testResult);
-        reportToLogIfTestCaseDoesNotExistInTestlink(testResult);
-        if(testCaseExistInTestlink(testResult))
-            tryReportResults(testResult);
-        boolean returnStatus = success;
-        resetSuccessToTrue();
-        return returnStatus;
-    }
-
-    private boolean testCaseExistInTestlink(TestlinkTestResult testlinkTestResult){
-        try {
-            api.api.getTestCaseIDByName(testlinkTestResult.testName, testlinkTestResult.testSuiteName, testlinkTestResult.testProjectName, "autotest");
-            return true;
-        }catch (Exception e){
-            return false;
-        }
-    }
-
-    private void reportToLogIfTestCaseDoesNotExistInTestlink(TestlinkTestResult testlinkTestResult){
-        if(testCaseExistInTestlink(testlinkTestResult)){
-            log("Checking that test case '" + testlinkTestResult.testName + "' exists in Testlink. It does. Proceeding.");
-        }else{
-            log("Could not report results for test automation test case '" + testlinkTestResult.testName + "'. Tried to report results to Testlink for the Testlink test case '" + testlinkTestResult.testName + "' in test suite '" + testlinkTestResult.testSuiteName + "' in test plan '" + testlinkTestResult.testPlanName + "' in test project '" + testlinkTestResult.testProjectName + "'.");
-        }
-    }
 
     public ArrayList<String> testlinkProjects(){
         ArrayList<String> projects = new ArrayList<>();
@@ -194,61 +160,6 @@ public class TestlinkReporter {
         sb.append("4). Change Testlink test cases to the 'Automated' status, and make sure your automated implementation of the test case reports the results to this test case using the reportResults() method.").append(System.lineSeparator());
         return sb.toString();
     }
-
-    /**
-     * Attempts to create test project in Testlink if it doesn't exist there already.
-     *
-     * @param testProjectName THe name of the test project in Testlink
-     * @return Returns the ID of the test project (found or created)
-     */
-    public Integer createTestProjectInTestlinkIfNotExistThere(String testProjectName){
-        Integer id = getProjectID(testProjectName);
-        if(id != null)return id;
-        try{
-            log("Test project '" + testProjectName + "' is missing in Testlink. Trying to create it.");
-            TestProject testProject = api.api.createTestProject(testProjectName, testProjectName.substring(0,1),"", false, false, true, false, true, true);
-            TestlinkCache.addTestProjectToCache(testProject);
-            return testProject.getId();
-        }catch (Exception e){
-            log("Could not create missing test project '" + testProjectName + "' in Testlink. " + e.getMessage());
-            success = false;
-        }
-        return getProjectID(testProjectName);
-    }
-
-    public void resetLogMessage(){
-        logMessage = System.lineSeparator();
-    }
-
-    public Integer createTestPlanInTestlinkIfNotExistThere(String testProjectName, String testPlanName){
-        createTestProjectInTestlinkIfNotExistThere(testProjectName);
-        log("Verifying that test plan '" + testPlanName + "' need to be created in Testlink test project '" + testProjectName + "'.");
-        Integer id = getTestPlanId(testProjectName, testPlanName);
-        if(id != null) return id;
-        log("Test plan '" + testPlanName + "' does not exist in test project '" + testProjectName + "' and should be created.");
-        TestPlan testPlan = api.api.createTestPlan(testPlanName, testProjectName, "Automatically created", true, true);
-        TestlinkCache.addTestPlanToCache(testPlan, getProjectID(testProjectName));
-        return getTestPlanId(testProjectName, testPlanName);
-    }
-
-    public Integer createTestSuiteInTestlinkIfNotExistThere(String testProjectName, String testSuiteName, String testPlanName){
-        createTestPlanInTestlinkIfNotExistThere(testProjectName, testPlanName);
-        Integer id = getTestSuiteId(testProjectName, testSuiteName);
-        if(id != null) return id;
-        TestSuite testSuite;
-        try {
-            log("Assessing if Testlink test suite '" + testSuiteName + "' need to be created in test plan '" + testPlanName + "' in test project '" + testProjectName + "'.");
-            testSuite = api.api.createTestSuite(getProjectID(testProjectName), testSuiteName, "Automatically created from test automation TAF.", null, null, false, ActionOnDuplicate.CREATE_NEW_VERSION);
-            TestlinkCache.addTestSuiteToCache(testSuite, getTestPlanId(testProjectName, testPlanName));
-            id = testSuite.getId();
-            log("Created test suite '" + testSuiteName + "' in test plan '" + testPlanName + "' in Testlink test project '" + testProjectName + "'.");
-        } catch (TestLinkAPIException e) {
-            log("Could not create test suite test suite '" + testSuiteName + "' in test plan '" + testPlanName + "' in Testlink test project '" + testProjectName + "'. " + e.getMessage());
-            success = false;
-        }
-        return id;
-    }
-
     public Integer getTestSuiteId(String testProjectName, String testSuiteName){
         TestPlan[] testPlans = api.api.getProjectTestPlans(getProjectID(testProjectName));
         for(TestPlan testPlan : testPlans){
@@ -260,38 +171,6 @@ public class TestlinkReporter {
         return null;
     }
 
-    public boolean testPlanExist(String testProject){
-        return (getProjectID(testProject) != null);
-    }
-
-    public boolean testSuiteExist(String testProject, String testSuite){
-        return (getTestSuiteId(testProject, testSuite) != null);
-    }
-
-
-    private void createTestCaseInTestlinkIfNotExistThere(TestlinkTestResult testlinkTestResult){
-        createTestSuiteInTestlinkIfNotExistThere(testlinkTestResult.testProjectName, testlinkTestResult.testSuiteName, testlinkTestResult.testPlanName);
-        try {
-            log(api.api.getTestCaseIDByName(testlinkTestResult.testName, testlinkTestResult.testSuiteName, testlinkTestResult.testProjectName, "autotest").toString());
-            log("Verified that test case '" + testlinkTestResult.testName + "' exist in test suite '" + testlinkTestResult.testSuiteName + "' in test plan '" + testlinkTestResult.testPlanName + "' in test project '" + testlinkTestResult.testProjectName + "', and it does.");
-        }catch (Exception e){
-            try {
-                List<TestCaseStep> steps = new ArrayList<>();
-                log(api.api.createTestCase(testlinkTestResult.testName,
-                        getTestSuiteId(testlinkTestResult.testProjectName, testlinkTestResult.testSuiteName),
-                        getProjectID(testlinkTestResult.testProjectName),
-                        Settings.testlinkUserName,
-                        "Test case automatically created by test automation execution.",
-                        steps,
-                        "ExpectedToPass",
-                        TestCaseStatus.FINAL, TestImportance.MEDIUM, ExecutionType.AUTOMATED, null, null, false, ActionOnDuplicate.CREATE_NEW_VERSION).toString());
-                log("Creating test case '" + testlinkTestResult.testName + "' in Testlink (in test suite '" + testlinkTestResult.testSuiteName + "' and project '" + testlinkTestResult.testProjectName + "') since it didn't exist.");
-            } catch (TestLinkAPIException e1) {
-                log("Tried to create test case in Testlink since the test case didn't exist. This did not work out as expected." + e1.getMessage());
-                success = false;
-            }
-        }
-    }
 
     private void tryReportResults(TestlinkTestResult testlinkTestResult){
         try{
@@ -342,15 +221,9 @@ public class TestlinkReporter {
         }
     }
 
-    private boolean apiIsNotReady(){
-        return this.api == null;
-    }
-
-    private void reportApiProblem(String testName){
-        log("No connection to Testlink API. Could not report test results for test case '" + testName + "' to Testlink.");
-    }
 
     private void log(String message){
+        System.out.println(message);
         this.logMessage += message + System.lineSeparator();
     }
 

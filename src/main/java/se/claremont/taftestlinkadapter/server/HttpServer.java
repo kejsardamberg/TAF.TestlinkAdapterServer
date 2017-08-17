@@ -5,6 +5,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import se.claremont.taftestlinkadapter.testlink.TestlinkClient;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -31,18 +32,34 @@ public class HttpServer {
         }catch (Exception e){
             System.out.println(System.lineSeparator() + e.toString());
         }
+        System.out.println("Parameters used:");
+        System.out.println(" * Testlink API endpoint used = " + Settings.testlinkServerAddress);
+        System.out.println(" * TAF Testlink Adapter Server connection port = " + Settings.port);
+        System.out.println(" * Testlink user name = " + Settings.testlinkUserName);
+        System.out.println(" * DevKey used for Testlink API = " + Settings.testlinkDevKey);
+        System.out.println(" * TAF Testlink Adapter API version = " + Settings.currentApiVersion);
+        System.out.println(" * Testlink server connection timeout = " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds.");
+        System.out.println(" * Default Testlink project to create unidentified test cases in = '" + Settings.defaultTestProjectNameForNewTestCases + "'");
+        System.out.println(" * Default Testlink TestSuite to create unidentified test cases in = '" + Settings.defaultTestSuiteNameForNewTestCases + "'");
+        System.out.println(" * Default Testlink TestPlan to assign unidentified test cases to = '" + Settings.defaultTestPlanName + "'");
+        System.out.println(" * URL for TAF to connect = http://" + getIPAddressesOfLocalMachine() + ":" + Settings.port + "/taftestlinkadapter");
         if(isStarted()){
-            System.out.println(System.lineSeparator() + "Server started." + System.lineSeparator());
-            System.out.println("Connect at = http://" + getIPAddressesOfLocalMachine() + ":" + Settings.port + "/taftestlinkadapter");
-            System.out.println("Testlink API address to attempt connect = " + Settings.testlinkServerAddress);
-            System.out.println("Testlink user name = " + Settings.testlinkUserName);
+            System.out.println(System.lineSeparator() + "TAF Testlink Adapter interface server started.");
         } else {
             System.out.println(System.lineSeparator() + "Could not start server." + System.lineSeparator());
             return;
         }
-        System.out.println(System.lineSeparator() + "Server ready to serve." + System.lineSeparator());
-    }
+        if(!checkTestlinkServerConnection()){
+            System.out.println("Could not establish connection to Testlink server. Exiting.");
+            stop();
+            System.exit(0);
+        } else {
+            System.out.println("Connection to Testlink server established." + System.lineSeparator());
+            System.out.println("URL for TAF to connect    = http://" + getIPAddressesOfLocalMachine() + ":" + Settings.port + "/taftestlinkadapter" + System.lineSeparator());
+            System.out.println(System.lineSeparator() + "Server ready to serve." + System.lineSeparator());
+        }
 
+    }
 
     public boolean isStarted(){
         return (server != null && !server.isFailed());
@@ -52,7 +69,7 @@ public class HttpServer {
         try{
             server.stop();
             server.destroy();
-            System.out.println("Server stopped." + System.lineSeparator());
+            System.out.println(System.lineSeparator() + "Server stopped." + System.lineSeparator());
         }catch (Exception e){
             System.out.println("Error stopping HTTP server: " + e.toString());
         }
@@ -67,4 +84,11 @@ public class HttpServer {
         }
         return ip;
     }
+
+    private static boolean checkTestlinkServerConnection() {
+        System.out.println("Checking connection to Testlink (timeout " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds).");
+        TestlinkClient client = new TestlinkClient();
+        return client.api != null;
+    }
+
 }

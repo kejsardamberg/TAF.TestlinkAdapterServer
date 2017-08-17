@@ -4,7 +4,10 @@ import se.claremont.taftestlinkadapter.testlink.TestRunRegistration;
 import se.claremont.taftestlinkadapter.webpages.AboutPage;
 import se.claremont.taftestlinkadapter.webpages.InfoPage;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -58,6 +61,7 @@ public class Resource {
     }
 
     @GET
+    @Path("")
     @Produces(MediaType.TEXT_HTML)
     public String landingPage() {
         return AboutPage.toHtml();
@@ -69,9 +73,12 @@ public class Resource {
     public String postTestRun(String testRun) {
         System.out.println("Received POST request to /taftestlinkadapter/v1/testrun/ with content: '" + testRun + "'." + System.lineSeparator());
         try{
-            return new TestRunRegistration(testRun).result();
+            TestRunRegistration testRunRegistration = new TestRunRegistration(testRun);
+            return testRunRegistration.log.toString();
         } catch (Exception e){
-            return "Not Ok";
+            System.out.println(e.getMessage() + ". Cause: " + e.getCause());
+            System.out.println(String.join(System.lineSeparator(), e.getStackTrace().toString()));
+            return "Not Ok: " + e.getMessage();
         }
     }
 }

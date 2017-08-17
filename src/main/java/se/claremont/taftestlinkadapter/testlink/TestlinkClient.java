@@ -1,11 +1,10 @@
 package se.claremont.taftestlinkadapter.testlink;
 
 import br.eti.kinoshita.testlinkjavaapi.TestLinkAPI;
-import br.eti.kinoshita.testlinkjavaapi.util.TestLinkAPIException;
 import se.claremont.taftestlinkadapter.server.Settings;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.*;
 
 /**
  * A connection to the Testlink server, via the API provided.
@@ -14,21 +13,40 @@ import java.net.URL;
  */
 public class TestlinkClient {
 
-    public br.eti.kinoshita.testlinkjavaapi.TestLinkAPI api;
+    public TestLinkAPI api;
 
     public TestlinkClient(){
-        try {
-            api = new TestLinkAPI(new URL(Settings.testlinkServerAddress), Settings.testlinkDevKey);
-        } catch (MalformedURLException e) {
-            System.out.println(e.toString());
+        api = getTestlinkApiConnection();
+        if(api == null){
+            System.out.println("Could not connect to the Testlink server at '" + Settings.testlinkServerAddress + "' within the stated timeout of " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds.");
+        } else {
+            System.out.println("Connection to Testlink server successfully established.");
         }
     }
 
-    public TestlinkClient(String url, String devKey){
+    private static TestLinkAPI getTestlinkApiConnection() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        TestLinkAPI client = null;
+        Future<TestLinkAPI> future = executor.submit(new TestlinkConnection());
         try {
-            api = new TestLinkAPI(new URL(url), devKey);
-        } catch (MalformedURLException | TestLinkAPIException e) {
-            System.out.println(e.toString());
+            Integer timeoutInSeconds = Integer.parseInt(Settings.testlinkServerConnectionTimeoutInSeconds);
+            if(timeoutInSeconds == null) timeoutInSeconds = 10;
+            client = future.get(timeoutInSeconds, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        executor.shutdownNow();
+        return client;
+    }
+
+    private static class TestlinkConnection implements Callable<TestLinkAPI> {
+        @Override
+        public TestLinkAPI call() throws Exception{
+            return new TestLinkAPI(new URL(Settings.testlinkServerAddress), Settings.testlinkDevKey);
         }
     }
 }
