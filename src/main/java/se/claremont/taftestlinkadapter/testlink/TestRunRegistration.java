@@ -8,6 +8,7 @@ import se.claremont.taftestlinkadapter.server.Settings;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,13 +19,13 @@ import java.util.List;
  * Created by jordam on 2017-03-24.
  */
 public class TestRunRegistration {
-    TestlinkReporter testlinkReporter = null;
-    List<TestProject> testProjects = new ArrayList<>();
-    List<TestPlan> testPlans = new ArrayList<>();
-    List<TestSuite> testSuites = new ArrayList<>();
-    List<TestCase> testCases = new ArrayList<>();
-    Boolean defaultTestSuiteFound = null;
-    Integer defaultTestSuiteId = null;
+    private TestlinkReporter testlinkReporter = null;
+    private List<TestProject> testProjects = new ArrayList<>();
+    private List<TestPlan> testPlans = new ArrayList<>();
+    private List<TestSuite> testSuites = new ArrayList<>();
+    private List<TestCase> testCases = new ArrayList<>();
+    private Boolean defaultTestSuiteFound = null;
+    private Integer defaultTestSuiteId = null;
     public StringBuilder log = new StringBuilder();
 
 
@@ -70,7 +71,6 @@ public class TestRunRegistration {
     }
 
     private void reportTestCaseToTestlink(TestlinkTestCaseMapper testCase){
-        StringBuilder logMessage = new StringBuilder();
         //noinspection ConstantConditions
         TestCaseMatch testCaseToWorkWith = identifyTestCaseToReportTo2(testCase);
         if(testCaseToWorkWith == null) {
@@ -112,26 +112,18 @@ public class TestRunRegistration {
         clearCache();
         log("Updating cache.");
         TestProject[] projects = testlinkReporter.api.api.getProjects();
-        for(TestProject testProject : projects){
-            testProjects.add(testProject);
-        }
+        Collections.addAll(testProjects, projects);
         for(TestProject project : testProjects){
             TestPlan[] plans = testlinkReporter.api.api.getProjectTestPlans(project.getId());
-            for(TestPlan testPlan : plans){
-                testPlans.add(testPlan);
-            }
+            Collections.addAll(testPlans, plans);
         }
         for(TestPlan plan : testPlans){
             TestSuite[] suites = testlinkReporter.api.api.getTestSuitesForTestPlan(plan.getId());
-            for(TestSuite suite: suites){
-                testSuites.add(suite);
-            }
+            Collections.addAll(testSuites, suites);
         }
         for(TestPlan plan : testPlans){
             TestCase[] cases = testlinkReporter.api.api.getTestCasesForTestPlan(plan.getId(), null, null, null, null, null, null, null, null, null, null);
-            for(TestCase testCase : cases){
-                testCases.add(testCase);
-            }
+            Collections.addAll(testCases, cases);
         }
         for(TestSuite suite : testSuites){
             TestCase[] cases = testlinkReporter.api.api.getTestCasesForTestSuite(suite.getId(), true, null);
@@ -169,7 +161,7 @@ public class TestRunRegistration {
             TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
             TestProject testProject = null;
             for(TestProject testProject1 : testProjects){
-                if(testProject1.getId() == theTestCaseInstanceInTestlink.getTestProjectId()){
+                if(testProject1.getId().equals(theTestCaseInstanceInTestlink.getTestProjectId())){
                     testProject = testProject1;
                     break;
                 }
@@ -189,7 +181,7 @@ public class TestRunRegistration {
                 log("Found exactly one Testlink test case with a name exactly as the TAF test case name. Using test case '" + exactNameMatches.get(0).getName() + "' for reporting.");
                 TestProject testProject = null;
                 for(TestProject testProject1 : testProjects){
-                    if(testProject1.getId() == exactNameMatches.get(0).getTestProjectId()){
+                    if(testProject1.getId().equals(exactNameMatches.get(0).getTestProjectId())){
                         testProject = testProject1;
                         break;
                     }
@@ -203,7 +195,6 @@ public class TestRunRegistration {
                 List<Integer> suiteIds = new ArrayList<>();
                 suiteIds.add(potentialMatch.getTestSuiteId());
                 TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
-                if(suiteIds == null) continue;
                 for(TestSuite suite : testSuites){
                     if(suite.getName().contains(testCase.testSetName)){
                         containsTestSuiteNameMatchesToTestSetName.add(potentialMatch);
@@ -215,7 +206,7 @@ public class TestRunRegistration {
                 log("Found exactly one Testlink test case with both a name corresponding to the TAF test case '" + testCase.testName + "', and a test suite '" + containsTestSuiteNameMatchesToTestSetName.get(0).getName() + "' containing the TAF TestSet name '" + testCase.testSetName + "'.");
                 TestProject testProject = null;
                 for(TestProject testProject1 : testProjects){
-                    if(testProject1.getId() == containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId()){
+                    if(testProject1.getId().equals(containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId())){
                         testProject = testProject1;
                         break;
                     }
@@ -228,13 +219,12 @@ public class TestRunRegistration {
                 List<Integer> suiteIds = new ArrayList<>();
                 suiteIds.add(potentialExactTestSuiteNameMatchToTestSetName.getTestSuiteId());
                 TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
-                if(suiteIds == null) continue;
                 for(TestSuite suite : testSuites){
                     if(suite.getName().equals(testCase.testSetName)){
                         log("Found exactly one Testlink test case with both a name ('" + potentialExactTestSuiteNameMatchToTestSetName.getName() + "') corresponding to the TAF test case name '" + testCase.testName + "', and a test suite '" + suite.getName() + "' exactly matching the TAF TestSet name '" + testCase.testSetName + "'.");
                         TestProject testProject = null;
                         for(TestProject testProject1 : testProjects){
-                            if(testProject1.getId() == potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId()){
+                            if(testProject1.getId().equals(potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId())){
                                 testProject = testProject1;
                                 break;
                             }
@@ -246,16 +236,16 @@ public class TestRunRegistration {
                 }
             }
         }
-        String logMessage = "Found multiple potential test cases for result reporting in Testlink. Using the first potential Testlink test case since there are several matching the test case." + System.lineSeparator();
+        StringBuilder logMessage = new StringBuilder("Found multiple potential test cases for result reporting in Testlink. Using the first potential Testlink test case since there are several matching the test case." + System.lineSeparator());
         for(TestCase potentialMatch : potentialMatches){
-            logMessage += " * Test case name: '" + potentialMatch.getName() + "' (suite id: " + potentialMatch.getId() + ")." + System.lineSeparator();
+            logMessage.append(" * Test case name: '").append(potentialMatch.getName()).append("' (suite id: ").append(potentialMatch.getId()).append(").").append(System.lineSeparator());
         }
-        logMessage += "Using the first test case: " + potentialMatches.get(0).toString();
-        log(logMessage);
+        logMessage.append("Using the first test case: ").append(potentialMatches.get(0).toString());
+        log(logMessage.toString());
         TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
         TestProject testProject = null;
         for(TestProject testProject1 : testProjects){
-            if(testProject1.getId() == theTestCaseInstanceInTestlink.getTestProjectId()){
+            if(testProject1.getId().equals(theTestCaseInstanceInTestlink.getTestProjectId())){
                 testProject = testProject1;
                 break;
             }
@@ -426,13 +416,13 @@ public class TestRunRegistration {
 
 
     class TestCaseMatch{
-        public br.eti.kinoshita.testlinkjavaapi.model.TestCase testCase;
-        public Integer testPlanId;
-        public Integer testSuiteId;
-        public Integer projectId;
-        public Integer buildId;
+        br.eti.kinoshita.testlinkjavaapi.model.TestCase testCase;
+        Integer testPlanId;
+        Integer testSuiteId;
+        Integer projectId;
+        Integer buildId;
 
-        public TestCaseMatch(br.eti.kinoshita.testlinkjavaapi.model.TestCase testCase, Integer testPlanId, Integer testSuiteId, Integer projectId, Integer buildId){
+        TestCaseMatch(br.eti.kinoshita.testlinkjavaapi.model.TestCase testCase, Integer testPlanId, Integer testSuiteId, Integer projectId, Integer buildId){
             this.testPlanId = testPlanId;
             this.testSuiteId = testSuiteId;
             this.projectId = projectId;

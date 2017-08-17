@@ -2,17 +2,12 @@ package se.claremont.taftestlinkadapter.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 /**
  * Command line enabled start class
  *
  * Created by jordam on 2017-03-18.
  */
 public class App {
-    static PrintStream originalOutputChannel;
-    static ByteArrayOutputStream testOutputChannel;
     public static ObjectMapper mapper = new ObjectMapper();
 
     private static String helpText(){

@@ -9,10 +9,10 @@ import java.util.Date;
  * Created by jordam on 2017-03-21.
  */
 @SuppressWarnings("SameParameterValue")
-public class CommonSections {
+class CommonSections {
 
     @SuppressWarnings("StringBufferReplaceableByString")
-    public static String headSection(String scripts, String extraStyles, String extraHeadEntrys){
+    static String headSection(String scripts, String extraStyles, String extraHeadEntries){
         StringBuilder sb = new StringBuilder();
         sb.append("      <meta charset=\"UTF-8\">").append(System.lineSeparator());
         sb.append("      <link rel=\"shortcut icon\" href=\"http://46.101.193.212/TAF/images/facicon.png\">").append(LF);
@@ -28,7 +28,7 @@ public class CommonSections {
         sb.append("         document.write(\"<base href='\" + window.location.origin + \"' />\");").append(System.lineSeparator());
         sb.append("      </script>").append(System.lineSeparator());
         sb.append(scripts);
-        sb.append(extraHeadEntrys);
+        sb.append(extraHeadEntries);
         return sb.toString();
     }
 
@@ -59,7 +59,7 @@ public class CommonSections {
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
-    public static String pageHeader(){
+    static String pageHeader(){
         StringBuilder sb = new StringBuilder();
         sb.append("<a href=\"http://www.claremont.se\"><img class=\"toplogo\" src=\"http://46.101.193.212/TAF/images/claremontlogo.gif\"></a>").append(System.lineSeparator());
         sb.append("<div class=\"topmenu\">");
@@ -75,7 +75,7 @@ public class CommonSections {
      * Produces a document pageFooter for the summary reportTestRun.
      * @return HTML section for pageFooter
      */
-    public static String pageFooter(){
+    static String pageFooter(){
         String versionInfo = "<a href=\"https://github.com/claremontqualitymanagement/TestAutomationFramework/releases\" target=\"_blank\" class=\"license_link\"> Version 1.0.</a>";
         //noinspection deprecation
         return "<br><br>" +

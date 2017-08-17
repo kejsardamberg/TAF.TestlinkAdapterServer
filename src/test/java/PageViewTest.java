@@ -1,6 +1,5 @@
 import org.junit.*;
 import se.claremont.autotest.common.testset.TestSet;
-import se.claremont.autotest.restsupport.RestSupport;
 import se.claremont.taftestlinkadapter.server.HttpServer;
 import se.claremont.taftestlinkadapter.server.Settings;
 
@@ -10,8 +9,7 @@ import se.claremont.taftestlinkadapter.server.Settings;
  * Created by jordam on 2017-03-24.
  */
 public class PageViewTest extends TestSet {
-    static HttpServer httpServer = null;
-    RestSupport restSupport = null;
+    private static HttpServer httpServer = null;
 
      @BeforeClass
      public static void classSetup(){
@@ -29,11 +27,6 @@ public class PageViewTest extends TestSet {
              httpServer.stop();
          }
      }
-
-    @Before
-    public void testSetup(){
-         restSupport = new RestSupport(currentTestCase);
-    }
 
     @Test
     @Ignore

@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  */
 public class HttpServer {
 
-    ResourceConfig config = new ResourceConfig();
+    private ResourceConfig config = new ResourceConfig();
     Server server;
 
     public void start(){
@@ -86,8 +86,9 @@ public class HttpServer {
     }
 
     private static boolean checkTestlinkServerConnection() {
-        System.out.println("Checking connection to Testlink (timeout " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds).");
+        System.out.print("Checking connection to Testlink (timeout " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds).");
         TestlinkClient client = new TestlinkClient();
+        System.out.print(System.lineSeparator());
         return client.api != null;
     }
 

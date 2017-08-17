@@ -77,7 +77,11 @@ public class Resource {
             return testRunRegistration.log.toString();
         } catch (Exception e){
             System.out.println(e.getMessage() + ". Cause: " + e.getCause());
-            System.out.println(String.join(System.lineSeparator(), e.getStackTrace().toString()));
+            StringBuilder error = new StringBuilder();
+            for(StackTraceElement stackTraceElement : e.getStackTrace()){
+                error.append(stackTraceElement.toString());
+            }
+            System.out.println(error);
             return "Not Ok: " + e.getMessage();
         }
     }

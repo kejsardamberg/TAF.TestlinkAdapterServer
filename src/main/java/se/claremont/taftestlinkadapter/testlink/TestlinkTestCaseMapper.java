@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * Created by jordam on 2017-03-26.
  */
-public class TestlinkTestCaseMapper {
+class TestlinkTestCaseMapper {
     @JsonProperty String testName;
     @JsonProperty String testSetName;
     @JsonProperty String notes;
@@ -16,10 +16,4 @@ public class TestlinkTestCaseMapper {
 
     public TestlinkTestCaseMapper(){}
 
-    public TestlinkTestCaseMapper(String testName, String testSetName, String notes, String executionStatus){
-        this.testName = testName;
-        this.testSetName = testSetName;
-        this.notes = notes;
-        this.executionStatus = executionStatus;
-    }
 }

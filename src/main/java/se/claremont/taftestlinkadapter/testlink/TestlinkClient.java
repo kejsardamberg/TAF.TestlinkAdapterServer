@@ -18,9 +18,9 @@ public class TestlinkClient {
     public TestlinkClient(){
         api = getTestlinkApiConnection();
         if(api == null){
-            System.out.println("Could not connect to the Testlink server at '" + Settings.testlinkServerAddress + "' within the stated timeout of " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds.");
+            System.out.println(System.lineSeparator() + "Could not connect to the Testlink server at '" + Settings.testlinkServerAddress + "' within the stated timeout of " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds.");
         } else {
-            System.out.println("Connection to Testlink server successfully established.");
+            System.out.println(System.lineSeparator() + "Connection to Testlink server successfully established.");
         }
     }
 
@@ -28,20 +28,26 @@ public class TestlinkClient {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         TestLinkAPI client = null;
         Future<TestLinkAPI> future = executor.submit(new TestlinkConnection());
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        Future f = es.submit(new DotPrinter());
         try {
             Integer timeoutInSeconds = Integer.parseInt(Settings.testlinkServerConnectionTimeoutInSeconds);
-            if(timeoutInSeconds == null) timeoutInSeconds = 10;
             client = future.get(timeoutInSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-        } catch (InterruptedException e) {
+            f.cancel(true);
+            es.shutdownNow();
+            System.out.print(System.lineSeparator() + "Connection attempt timed out.");
+        } catch (ExecutionException | InterruptedException e) {
+            System.out.print(System.lineSeparator());
             System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
             System.out.println(e.getMessage() + System.lineSeparator());
-        } catch (ExecutionException e) {
-            System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
-            System.out.println(e.getMessage() + System.lineSeparator());
+        } finally {
+            f.cancel(true);
+            es.shutdownNow();
         }
         executor.shutdownNow();
+        System.out.print(System.lineSeparator());
         return client;
     }
 
@@ -49,6 +55,19 @@ public class TestlinkClient {
         @Override
         public TestLinkAPI call() throws Exception{
             return new TestLinkAPI(new URL(Settings.testlinkServerAddress), Settings.testlinkDevKey);
+        }
+    }
+
+    private static class DotPrinter implements Runnable {
+        @Override
+        public void run(){
+            while(!Thread.currentThread().isInterrupted()){
+                try {
+                    Thread.sleep(500); //exclude try/catch for brevity
+                } catch (InterruptedException ignored) {
+                }
+                System.out.print(".");
+            }
         }
     }
 }
