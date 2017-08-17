@@ -372,13 +372,36 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <!-- put your configurations here -->
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>se.claremont.taftestlinkadapter.server.App</mainClass>
+                        </transformer>
+                    </transformers>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <executions>
                     <execution>
                         <id>go-framework-assemby</id>
-                        <phase>package</phase><!-- create assembly in package phase (invoke 'single' goal on assemby plugin)-->
+                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -386,8 +409,6 @@
                             <descriptors>
                                 <descriptor>src/main/assemble/taf_bin.xml</descriptor>
                             </descriptors>
-                            <!-- build name by maven default -->
-                            <!--<finalName>TafFull</finalName>-->
                             <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifest>
@@ -398,6 +419,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 

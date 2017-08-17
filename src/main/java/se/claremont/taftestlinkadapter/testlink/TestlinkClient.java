@@ -35,9 +35,11 @@ public class TestlinkClient {
         } catch (TimeoutException e) {
             future.cancel(true);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
+            System.out.println(e.getMessage() + System.lineSeparator());
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
+            System.out.println(e.getMessage() + System.lineSeparator());
         }
         executor.shutdownNow();
         return client;

@@ -36,6 +36,7 @@ public class PageViewTest extends TestSet {
     }
 
     @Test
+    @Ignore
     public void serverStart(){
         Assert.assertTrue(httpServer.isStarted());
     }
