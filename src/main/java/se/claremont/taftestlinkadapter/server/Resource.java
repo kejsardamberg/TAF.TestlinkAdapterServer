@@ -72,17 +72,17 @@ public class Resource {
     @Path("v1/testrun")
     public String postTestRun(String testRun) {
         System.out.println("Received POST request to /taftestlinkadapter/v1/testrun/ with content: '" + testRun + "'." + System.lineSeparator());
+        TestRunRegistration testRunRegistration = new TestRunRegistration(testRun);
         try{
-            TestRunRegistration testRunRegistration = new TestRunRegistration(testRun);
             return testRunRegistration.log.toString();
         } catch (Exception e){
             System.out.println(e.getMessage() + ". Cause: " + e.getCause());
             StringBuilder error = new StringBuilder();
             for(StackTraceElement stackTraceElement : e.getStackTrace()){
-                error.append(stackTraceElement.toString());
+                error.append(stackTraceElement.toString()).append(System.lineSeparator());
             }
             System.out.println(error);
-            return "Not Ok: " + e.getMessage();
+            return testRunRegistration.debugLog.toString() + System.lineSeparator() + System.lineSeparator() + "Not Ok: " + e.getMessage() + System.lineSeparator() + error.toString();
         }
     }
 }
