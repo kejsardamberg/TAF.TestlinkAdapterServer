@@ -77,13 +77,27 @@ public class Resource {
             testRunRegistration.reportTestRun(testRun);
             return testRunRegistration.log.toString();
         } catch (Exception e){
-            System.out.println("Could not register test run. Error: " + e.getMessage() + ". Cause: " + e.getCause());
             StringBuilder error = new StringBuilder();
-            for(StackTraceElement stackTraceElement : e.getStackTrace()){
-                error.append(stackTraceElement.toString()).append(System.lineSeparator());
-            }
-            System.out.println(error);
-            return "Problem. Could not register test run to Testlink. Error: " + e.getMessage() + System.lineSeparator() + System.lineSeparator() + "Debug log entries for test run registration from TAF Testlink Adapter Server:" + System.lineSeparator() + testRunRegistration.debugLog.toString() + System.lineSeparator() + System.lineSeparator() + error.toString();
+            error.append(System.lineSeparator());
+            error.append("Problems encountered in 'TAF Testlink Adapter Server' while trying to register TAF test run to Testlink.");
+            error.append(System.lineSeparator());
+            error.append("Error: ");
+            error.append(e.getMessage());
+            error.append(System.lineSeparator());
+            error.append("Cause: ");
+            error.append(e.getCause());
+            error.append(System.lineSeparator());
+            try{
+                for(StackTraceElement stackTraceElement : e.getStackTrace()){
+                    error.append(stackTraceElement.toString()).append(System.lineSeparator());
+                }
+                error.append(System.lineSeparator());
+            }catch (Exception ignored){}
+            error.append("Debug log entries for test run registration from TAF Testlink Adapter Server:");
+            error.append(System.lineSeparator());
+            error.append(testRunRegistration.debugLog.toString());
+            System.out.println(error.toString());
+            return error.toString();
         }
     }
 }

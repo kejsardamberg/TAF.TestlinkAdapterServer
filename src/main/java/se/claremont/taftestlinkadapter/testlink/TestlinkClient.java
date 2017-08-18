@@ -63,7 +63,7 @@ public class TestlinkClient {
         public void run(){
             while(!Thread.currentThread().isInterrupted()){
                 try {
-                    Thread.sleep(500); //exclude try/catch for brevity
+                    Thread.sleep(1000); //exclude try/catch for brevity
                 } catch (InterruptedException ignored) {
                 }
                 System.out.print(".");
