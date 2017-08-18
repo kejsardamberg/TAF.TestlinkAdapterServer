@@ -27,27 +27,45 @@ public class TestRunRegistration {
     public StringBuilder log = new StringBuilder();
     public StringBuilder debugLog = new StringBuilder();
 
+    /**
+     * Empty constructor used for logging upon fails
+     */
     public TestRunRegistration() {
     }
 
+    /**
+     * Exception used to trigger more return information to TAF.
+     */
     public class TestResultsProblemException extends Exception {
         public TestResultsProblemException(String message) {
             super(message);
         }
     }
 
-    public void reportTestRun(String testRun) throws Exception{
+    /**
+     * Takes the information in the testRunJsonString parameter, interprets it and sends it to Testlink.
+     *
+     * @param testRunJsonString The JSON from the TAF test run TestRunResult object.
+     * @throws Exception If anything goes wrong during test results importing an exception could be thrown,
+     * altering the logging behavior.
+     */
+    public void reportTestRun(String testRunJsonString) throws Exception{
         log("Reporting TAF test run results to Testlink endpoint '" + Settings.testlinkServerAddress + "'.");
         testlinkReporter = new TestlinkReporter();
-        if(testRun == null || testRun.length() == 0) throw new TestResultsProblemException("Empty JSON to extract TAF TestRun from. Nothing to register to Testlink.");
-        EventStoreManager.registerTestRun(testRun);
-        TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun = getTestlinkReporterObject(testRun);
+        if(testRunJsonString == null || testRunJsonString.length() == 0) throw new TestResultsProblemException("Empty JSON to extract TAF TestRun from. Nothing to register to Testlink.");
+        EventStoreManager.registerTestRun(testRunJsonString);
+        TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun = getTestlinkReporterObject(testRunJsonString);
         if(testlinkTestCasesFromTestRun== null) throw new TestResultsProblemException("Could not find any test cases in TAF TestRun JSON.");
         logToDebugLog(cache.updateContent(testlinkReporter));
         reportTestCases(testlinkTestCasesFromTestRun);
         log("Reported all test cases.");
     }
 
+    /**
+     * Add a log message to the unified logging
+     *
+     * @param message Log message string to add to the normal (non-debug) log.
+     */
     private void log(String message){
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         Date now = new Date();
@@ -55,6 +73,13 @@ public class TestRunRegistration {
         logToDebugLog(message);
     }
 
+    /**
+     * Log to a specific debug log holding more information than the regular log.
+     * The debugging information is only meant to be relevant upon failure,
+     * and upon failures the debug log is returned rather than the normal log.
+     *
+     * @param message Log message string to add to the debug log.
+     */
     private void logToDebugLog(String message){
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         Date now = new Date();
@@ -62,14 +87,25 @@ public class TestRunRegistration {
         logToDebugLog(sdf.format(now) + "   " + message);
     }
 
-
-    private void reportTestCases(TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun) throws Exception{
+    /**
+     * Takes the test cases from the test run, one by one, and attempts to push the
+     * test case run results to Testlink.
+     *
+     * @param testlinkTestCasesFromTestRun The test cases information from the TAf test run.
+     */
+    private void reportTestCases(TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun){
         for(TestlinkTestCaseMapper testCase : testlinkTestCasesFromTestRun.testCases){
             if(testCase == null) continue;
             reportTestCaseToTestlink(testCase);
         }
     }
 
+    /**
+     * Converts the JSON with the run results from the TAF test run into proper Java objects.
+     *
+     * @param json Input JSON
+     * @return Returns an object with a set of TAF TestCases equivalents for further use.
+     */
     private TestlinkTestCasesFromTestRun getTestlinkReporterObject(String json){
         TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun = null;
         try {
@@ -83,10 +119,15 @@ public class TestRunRegistration {
         return testlinkTestCasesFromTestRun;
     }
 
-    private void reportTestCaseToTestlink(TestlinkTestCaseMapper testCase) throws Exception{
+    /**
+     * Attempts to report the results of a test case to a suitable test case in Testlink.
+     *
+     * @param testCase The incoming test case info to try to send to Testlink.
+     */
+    private void reportTestCaseToTestlink(TestlinkTestCaseMapper testCase){
         //noinspection ConstantConditions
         logToDebugLog("Starting registration of test case '" + testCase.testSetName + "/" + testCase.testName + "'.");
-        TestCaseMatch testCaseToWorkWith = identifyTestCaseToReportTo2(testCase);
+        TestCaseMatch testCaseToWorkWith = identifyTestCaseToReportResultsTo(testCase);
         if(testCaseToWorkWith == null) {
             log("Could neither identify nor create test case in Testlink for test case '" + testCase.testSetName + "/" + testCase.testName + "'.");
             return;
@@ -95,21 +136,34 @@ public class TestRunRegistration {
         log(postTestCaseResultToTestlink(testCaseToWorkWith, testCase));
     }
 
-    private void markTestCaseAsAutomatedIfItIsNotAlreadyMarkedAsAutomated(TestCaseMatch testCaseToWorkWith) {
-        if(testCaseToWorkWith.testCase.getExecutionType().equals(ExecutionType.AUTOMATED))return;
+    /**
+     * When a suitable test case for test results reporting is identified in Testlink
+     * this method makes sure it is marked to be of the execution type AUTOMATED in Testlink.
+     *
+     * @param testlinkTestCase The test case instance in Testlink
+     */
+    private void markTestCaseAsAutomatedIfItIsNotAlreadyMarkedAsAutomated(TestCaseMatch testlinkTestCase) {
+        if(testlinkTestCase.testCase.getExecutionType().equals(ExecutionType.AUTOMATED))return;
         try{
             testlinkReporter.api.api.setTestCaseExecutionType(
-                    testCaseToWorkWith.projectId,
-                    testCaseToWorkWith.testCase.getId(),
-                    Integer.parseInt(testCaseToWorkWith.testCase.getFullExternalId()),
-                    testCaseToWorkWith.testCase.getVersion(),
+                    testlinkTestCase.projectId,
+                    testlinkTestCase.testCase.getId(),
+                    Integer.parseInt(testlinkTestCase.testCase.getFullExternalId()),
+                    testlinkTestCase.testCase.getVersion(),
                     ExecutionType.AUTOMATED);
-            logToDebugLog("The identified Testlink test case is not marked as automated in Testlink. Changing Testlink ExecutionType to AUTOMATED for test case '" + testCaseToWorkWith.testCase.getName() + "'.");
+            logToDebugLog("The identified Testlink test case is not marked as automated in Testlink. Changing Testlink ExecutionType to AUTOMATED for test case '" + testlinkTestCase.testCase.getName() + "'.");
         }catch (Exception e){
-            log("Something went wrong when trying to mark test case '" + testCaseToWorkWith.testCase.getName() + " as ExecutionType AUTOMATED in Testlink. Error message: " + e.getMessage());
+            log("Something went wrong when trying to mark test case '" + testlinkTestCase.testCase.getName() + " as ExecutionType AUTOMATED in Testlink. Error message: " + e.getMessage());
         }
     }
 
+    /**
+     * Creates a new test case run instance in Testlink for the identified test case, with an appropriate test result status.
+     *
+     * @param testCaseMatch The identified Testlink test case to report results to.
+     * @param testCase The test case information from a test case from the TAF test run
+     * @return Returns an operation status text.
+     */
     private String postTestCaseResultToTestlink(TestCaseMatch testCaseMatch, TestlinkTestCaseMapper testCase){
         ReportTCResultResponse results = testlinkReporter.api.api.reportTCResult(
                 testCaseMatch.testCase.getId(),
@@ -128,7 +182,14 @@ public class TestRunRegistration {
         return "Reported test case '" + testCase.testSetName + "/" + testCase.testName + "' to '" + testCaseMatch.testCase.toString() + "'. Results: " + results.getMessage();
     }
 
-    private TestCaseMatch identifyTestCaseToReportTo2(TestlinkTestCaseMapper testCase) {
+    /**
+     * Returns the most suitable Testlink test case identified for results reporting.
+     * If no corresponding match can be found a new test case is created in Testlink.
+     *
+     * @param testCase The test case from the TAF test run to find a test case in Testlink for.
+     * @return Returns a Testlink test case.
+     */
+    private TestCaseMatch identifyTestCaseToReportResultsTo(TestlinkTestCaseMapper testCase) {
         List<TestCase> potentialMatches = identifyPotentialMatches(testCase);
         if(potentialMatches.size() == 0){
             return createNewTestCase(testCase);
@@ -149,6 +210,15 @@ public class TestRunRegistration {
         return getFirstTestCaseMatch(testCase, potentialMatches);
     }
 
+    /**
+     * If only one of the test cases in the list of potential test case matches
+     * is marked with Execution Type AUTOMATED in Testlink this is returned by
+     * this method, else null is returned.
+     *
+     * @param potentialMatches List of potential test cases from Testlink
+     * @param testCase The test case from the TAF test run.
+     * @return Returns a Testlink test case if only on of the test cases in the list of potential ones are automated.
+     */
     private TestCaseMatch getSingleTestCaseMarkedAsAutomated(List<TestCase> potentialMatches, TestlinkTestCaseMapper testCase) {
         List<TestCase> potentialTestCaseMatchesMarkedAsAutomated = new ArrayList<>();
         for(TestCase potentialMatch : potentialMatches){
@@ -171,6 +241,13 @@ public class TestRunRegistration {
         return null;
     }
 
+    /**
+     * This method is used as a last resort. If several suitable test cases are found in Testlink. This method returns the first one.
+     *
+     * @param testCase The test case from the TAF test run, to find suitable corresponding test case for in Testlink.
+     * @param potentialMatches A list of Testlink test cases that could be suitable for matching the 'testCase' parameter.
+     * @return Returns the first TestCase from the list of test cases.
+     */
     private TestCaseMatch getFirstTestCaseMatch(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
         StringBuilder logMessage = new StringBuilder("Found multiple potential test cases for result reporting in Testlink. Using the first potential Testlink test case since there are several matching the test case." + System.lineSeparator());
         for(TestCase potentialMatch : potentialMatches){
@@ -191,6 +268,16 @@ public class TestRunRegistration {
         return new TestCaseMatch(theTestCaseInstanceInTestlink, testPlan.getId(), theTestCaseInstanceInTestlink.getTestSuiteId(), theTestCaseInstanceInTestlink.getTestProjectId(), build.getId() );
     }
 
+    /**
+     * If several Testlink test cases are identified to have exactly the same name as
+     * the sought after test case this method checks if any of these has a immediate
+     * parent TestSuite with a name exactly as the sought after test case TestSet name.
+     * If such test case is found this is returned, else null.
+     *
+     * @param containsTestSuiteNameMatchesToTestSetName List of potential Testlink test case candidates
+     * @param testCase The test case from the TAF test run to find Testlink match for
+     * @return Returns a match if such is found, else null.
+     */
     private TestCaseMatch getTestCaseWithExactTestSetNameMatchAndTestNameMatch(List<TestCase> containsTestSuiteNameMatchesToTestSetName, TestlinkTestCaseMapper testCase){
         for (TestCase potentialExactTestSuiteNameMatchToTestSetName : containsTestSuiteNameMatchesToTestSetName){
             List<Integer> suiteIds = new ArrayList<>();
@@ -215,6 +302,13 @@ public class TestRunRegistration {
         return null;
     }
 
+    /**
+     * When only one Testlink test case is left in the list of candidate test cases this test case is prepared and converted to a TestCaseMatch object.
+     *
+     * @param testCase The test case from the TAF test run to look for match for..
+     * @param containsTestSuiteNameMatchesToTestSetName The list of candidate Testlink test cases. Now only holding one relevant element left.
+     * @return Returns a converted object.
+     */
     private TestCaseMatch getSingleTestCaseWithBothTestSetAndTestNameContainsMatch(TestlinkTestCaseMapper testCase, List<TestCase> containsTestSuiteNameMatchesToTestSetName) {
         logToDebugLog("Found exactly one Testlink test case with both a name corresponding to the TAF test case '" + testCase.testName + "', and a test suite '" + containsTestSuiteNameMatchesToTestSetName.get(0).getName() + "' containing the TAF TestSet name '" + testCase.testSetName + "'.");
         TestProject testProject = null;
@@ -224,11 +318,20 @@ public class TestRunRegistration {
                 break;
             }
         }
+        if(testProject == null) identifyTestProject(testCase);
         TestPlan testPlan = identifyTestPlan(testProject, testCase);
         Build build = identifyBuild(testPlan);
         return new TestCaseMatch(containsTestSuiteNameMatchesToTestSetName.get(0), testPlan.getId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestSuiteId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId(), build.getId() );
     }
 
+    /**
+     * Returns a list of Testlink test cases where the Testlink test cases has a immediate parent
+     * test suite with a name containing the TAF test case TestSet name.
+     *
+     * @param testCase The TAF test run test case to look for a Testlink match for.
+     * @param potentialMatches List of candidate Testlink test cases for matching.
+     * @return Returns a subset of incoming potentialMatches.
+     */
     private List<TestCase> identifyTestCasesWithTestSuiteNameCorrespondingToTafTestSetName(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
         List<TestCase> containsTestSuiteNameMatchesToTestSetName = new ArrayList<>();
         for(TestCase potentialMatch : potentialMatches){
@@ -245,6 +348,13 @@ public class TestRunRegistration {
         return containsTestSuiteNameMatchesToTestSetName;
     }
 
+    /**
+     * Scans the Testlink test cases for test cases with a test case name containing
+     * the name of the TAF test case from the test run.
+     *
+     * @param testCase The test case from the TAF test run to look for suitable Testlink match for.
+     * @return Returns a list of Testlink test cases.
+     */
     private List<TestCase> identifyPotentialMatches(TestlinkTestCaseMapper testCase) {
         List<TestCase> potentialMatches = new ArrayList<>();
         for(TestCase registeredTestCase : cache.testCases){
@@ -255,6 +365,14 @@ public class TestRunRegistration {
         return potentialMatches;
     }
 
+    /**
+     * Checks if a Testlink test case with exactly the same test name as the test case from the TAF test run has exist.
+     * If so, this is returned. Else null is returned.
+     *
+     * @param potentialMatches List of candidate Testlink test cases
+     * @param testCase The TAF test case to look for match for
+     * @return Returns the unique match if encountered, else null.
+     */
     private TestCaseMatch identifyTestCaseWithExactNameMatch(List<TestCase> potentialMatches, TestlinkTestCaseMapper testCase){
         List<TestCase> exactNameMatches = new ArrayList<>();
         for(TestCase potentialMatch : potentialMatches){
@@ -278,6 +396,14 @@ public class TestRunRegistration {
         return null;
     }
 
+    /**
+     * Checks if only one Testlink test case is found that has a test name containing the sought after test name.
+     * If so, this is returned - else null is returned.
+     *
+     * @param testCase The test case from the TAF test run to find Testlink match for.
+     * @param potentialMatches A list of candidate Testlink test cases.
+     * @return Returns the unique test case, if exist. Else null.
+     */
     private TestCaseMatch getTestCaseMatch(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
         logToDebugLog("Found exactly one Testlink test case with a name containing the TAF test case name. Using test case '" + potentialMatches.get(0).getName() + "' for reporting.");
         TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
@@ -294,6 +420,12 @@ public class TestRunRegistration {
         return new TestCaseMatch(theTestCaseInstanceInTestlink, testPlan.getId(), theTestCaseInstanceInTestlink.getTestSuiteId(), theTestCaseInstanceInTestlink.getTestProjectId(), build.getId() );
     }
 
+    /**
+     * Creates a new test case in Testlink, for the TAF test case provided.
+     *
+     * @param testCase The TAF test case to create a Testlink test case for.
+     * @return Returns the created Testlink test case.
+     */
     private TestCaseMatch createNewTestCase(TestlinkTestCaseMapper testCase) {
         logToDebugLog("Zero potential matches for test case found in Testlink.");
         TestCaseMatch testCaseMatch = createTestCaseInTestlink(testCase);
@@ -301,7 +433,12 @@ public class TestRunRegistration {
         return testCaseMatch;
     }
 
-
+    /**
+     * Converts the TAF test case result status to a corresponding Testlink test result status.
+     *
+     * @param testCase The TAF test case.
+     * @return Returns corresponding Testlink execution status.
+     */
     private ExecutionStatus executionStatus(TestlinkTestCaseMapper testCase) {
         switch (testCase.executionStatus){
             case "PASSED":
@@ -313,7 +450,12 @@ public class TestRunRegistration {
         }
     }
 
-
+    /**
+     * Creates a test case in Testlink, in the most suitable place.
+     *
+     * @param testCase The test case from the TAF test run to create a Testlink test case for.
+     * @return Returns the Testlink test case created.
+     */
     private TestCaseMatch createTestCaseInTestlink(TestlinkTestCaseMapper testCase) {
         TestProject testProject = identifyTestProject(testCase);
         TestSuite testSuite = identifyTestSuite(testProject, testCase);
@@ -346,6 +488,13 @@ public class TestRunRegistration {
                 build.getId());
     }
 
+    /**
+     * Identifies a suitable Testlink build to report the test case results from thee TAF test run to.
+     * If no suitable build can be created a new build is created.
+     *
+     * @param testPlan The Testlink test plan to look for build in
+     * @return Returns a suitable Testlink build element
+     */
     private Build identifyBuild(TestPlan testPlan) {
         Build[] builds = testlinkReporter.api.api.getBuildsForTestPlan(testPlan.getId());
         if(builds.length == 1) return builds[0];
@@ -353,6 +502,14 @@ public class TestRunRegistration {
         return testlinkReporter.api.api.getLatestBuildForTestPlan(testPlan.getId());
     }
 
+    /**
+     * Identifies the most suitable Testlink test plan to report the test case results from the TAF test run to.
+     * If no suitable test plan can be identified, one is created.
+     *
+     * @param testProject The Testlink test project where to find a suitable test plan.
+     * @param testCase The test case from the TAF test run to find suitable Testlink test plan for.
+     * @return Returns a suitable Teslink test plan.
+     */
     private TestPlan identifyTestPlan(TestProject testProject, TestlinkTestCaseMapper testCase) {
         TestPlan[] testPlansForThisProject = testlinkReporter.api.api.getProjectTestPlans(testProject.getId());
         if(testProject == null) logToDebugLog("Null project when trying to identify test plan.");
@@ -376,6 +533,14 @@ public class TestRunRegistration {
         return newTestPlan;
     }
 
+    /**
+     * Identifies a suitable Testlink test suite to report TAF test case results to.
+     * If no suitable test suite can be found one is created and returned.
+     *
+     * @param testProject The Testlink test project where to find a suitable test suite.
+     * @param testCase The TAF test run test case to find suitable match for
+     * @return Returns the best possible Testlink test suite
+     */
     private TestSuite identifyTestSuite(TestProject testProject, TestlinkTestCaseMapper testCase) {
         //If a Testlink test suite exist with a name corresponding to the testCase TestSet, and with a Testlink TestCase with the same name as the TAF test case name, return this.
         for(TestSuite testSuite : cache.testSuites){
@@ -412,6 +577,12 @@ public class TestRunRegistration {
         return newlyCreatedTestSuite;
     }
 
+    /**
+     * Identifies a suitable Testlink test project to report test results to. If none is found one is created and returned.
+     *
+     * @param testCase The test case from the TAF test run to identify suitable Testlink test project for
+     * @return Returns a suitable Testlink test project.
+     */
     private TestProject identifyTestProject(TestlinkTestCaseMapper testCase) {
         Integer projectId = null;
         if(cache.testProjects.size() == 1){
@@ -446,6 +617,11 @@ public class TestRunRegistration {
 
     }
 
+    /**
+     * Used to check if the default Testlink test suite for test case creation exist.
+     *
+     * @param projectId The Testlink project id where to check.
+     */
     private void updateDefaultTestSuiteStatus(Integer projectId) {
         if(defaultTestSuiteFound == null){
             TestSuite[] candidateTestSuites = testlinkReporter.api.api.getFirstLevelTestSuitesForTestProject(projectId);
@@ -460,9 +636,11 @@ public class TestRunRegistration {
         }
     }
 
-
+    /**
+     * Holder for test case instance. Also used to fill in missing information from Testlink.
+     */
     class TestCaseMatch{
-        br.eti.kinoshita.testlinkjavaapi.model.TestCase testCase;
+        TestCase testCase;
         Integer testPlanId;
         Integer testSuiteId;
         Integer projectId;

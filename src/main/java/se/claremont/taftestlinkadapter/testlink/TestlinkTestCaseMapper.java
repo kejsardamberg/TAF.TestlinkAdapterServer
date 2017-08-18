@@ -14,6 +14,9 @@ class TestlinkTestCaseMapper {
     @JsonProperty String notes;
     @JsonProperty String executionStatus;
 
+    /**
+     * Constructor needed only for auto JSON parsing
+     */
     public TestlinkTestCaseMapper(){}
 
 }

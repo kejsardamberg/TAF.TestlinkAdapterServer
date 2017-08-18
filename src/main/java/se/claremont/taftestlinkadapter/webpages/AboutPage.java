@@ -10,6 +10,11 @@ import se.claremont.taftestlinkadapter.server.Settings;
  */
 public class AboutPage {
 
+    /**
+     * The page HTML generator.
+     *
+     * @return Returns the HTML code for the page.
+     */
     public static String toHtml(){
         return InfoPage.toHtml("<h1>TAF Testlink Adapter Server</h1>" +
                 "<p>This server helps propagate results from test runs performed in the test automation solution TAF to open source test and require management tool Testlink.</p>" +

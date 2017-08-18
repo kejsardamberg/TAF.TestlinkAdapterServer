@@ -12,6 +12,9 @@ import java.util.ArrayList;
 class TestlinkTestCasesFromTestRun {
     @JsonProperty ArrayList<TestlinkTestCaseMapper> testCases = new ArrayList<>();
 
+    /**
+     * Constructor needed only for automatic JSON parsing
+     */
     public TestlinkTestCasesFromTestRun(){}
 
 }

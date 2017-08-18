@@ -13,8 +13,14 @@ import java.util.concurrent.*;
  */
 public class TestlinkClient {
 
+    /**
+     * The connection to the Testlink APi
+     */
     public TestLinkAPI api;
 
+    /**
+     * Creating a connection to the Testlink API.
+     */
     public TestlinkClient(){
         api = getTestlinkApiConnection();
         if(api == null){
@@ -24,6 +30,11 @@ public class TestlinkClient {
         }
     }
 
+    /**
+     * Attempts setting up a connection to the Testlink API given by the runtime parameters.
+     *
+     * @return Return a session to the Testlink API
+     */
     private static TestLinkAPI getTestlinkApiConnection() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         TestLinkAPI client = null;
@@ -51,6 +62,9 @@ public class TestlinkClient {
         return client;
     }
 
+    /**
+     * A connection to a Testlink server API. Stated in a special class for threading purposes.
+     */
     private static class TestlinkConnection implements Callable<TestLinkAPI> {
         @Override
         public TestLinkAPI call() throws Exception{
@@ -58,6 +72,9 @@ public class TestlinkClient {
         }
     }
 
+    /**
+     * Cosmetic class for printing out dots at the output while waiting for a successful connection to the Testlink API.
+     */
     private static class DotPrinter implements Runnable {
         @Override
         public void run(){

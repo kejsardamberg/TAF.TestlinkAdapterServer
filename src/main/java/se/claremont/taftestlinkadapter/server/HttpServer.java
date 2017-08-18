@@ -11,7 +11,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * The server itself. This is the simple HTTP server that hosts the REST services
+ * This class holds the gateway server itself. This is the simple HTTP server
+ * that hosts the REST services the TAF installation connects to as well as
+ * some HTML pages.
  *
  * Created by jordam on 2017-03-18.
  */
@@ -20,6 +22,9 @@ public class HttpServer {
     private ResourceConfig config = new ResourceConfig();
     Server server;
 
+    /**
+     * Starting the server to enable communication.
+     */
     public void start(){
         System.out.println(System.lineSeparator() + "Starting TAF Testlink Adapter Server." + System.lineSeparator());
         config.packages("se.claremont.taftestlinkadapter");
@@ -61,10 +66,19 @@ public class HttpServer {
 
     }
 
+    /**
+     * Checks if the server is started.
+     *
+     * @return Returns true if server is running, else false.
+     */
     public boolean isStarted(){
         return (server != null && !server.isFailed());
     }
 
+
+    /**
+     * Stop the server.
+     */
     public void stop(){
         try{
             server.stop();
@@ -75,6 +89,11 @@ public class HttpServer {
         }
     }
 
+    /**
+     * Identifies local IP-address of the machine this server is executed on. Used to display connect help information.
+     *
+     * @return Returns IP address of the machine the server is executed upon.
+     */
     public static String getIPAddressesOfLocalMachine(){
         String ip = "Could not identify local IP address.";
         try {
@@ -85,6 +104,11 @@ public class HttpServer {
         return ip;
     }
 
+    /**
+     * Checks if a successful connection to the Testlink server can be established.
+     *
+     * @return Return true if a successful connection can be made with the Testlink server API, given the runtime parameters stated (username and DevKey).
+     */
     private static boolean checkTestlinkServerConnection() {
         System.out.print("Checking connection to Testlink (timeout " + Settings.testlinkServerConnectionTimeoutInSeconds + " seconds).");
         TestlinkClient client = new TestlinkClient();

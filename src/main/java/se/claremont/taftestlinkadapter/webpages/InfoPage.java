@@ -9,6 +9,12 @@ public class InfoPage {
 
     private static String LF = System.lineSeparator();
 
+    /**
+     * The page HTML generator.
+     *
+     * @param content The main content to apply this template upon
+     * @return Returns the HTML code for the page.
+     */
     @SuppressWarnings("StringBufferReplaceableByString")
     public static String toHtml(String content){
         StringBuilder sb = new StringBuilder();

@@ -3,13 +3,20 @@ package se.claremont.taftestlinkadapter.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Command line enabled start class
+ * Command line enabled start class for 'TAF Testlink Adapter Server'. This
+ * server start up a gateway listening for posted test run results from a
+ * TAF test run - and reporting the test results to Testlink.
  *
  * Created by jordam on 2017-03-18.
  */
 public class App {
     public static ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Help text for command line.
+     *
+     * @return The text
+     */
     private static String helpText(){
         return System.lineSeparator() +
                 "TAF Testlink Adapter Server" + System.lineSeparator() +
@@ -23,6 +30,11 @@ public class App {
                 "   java -jar TafTestlinkAdapterServer.jar info" + System.lineSeparator() + System.lineSeparator();
     }
 
+    /**
+     * Printing information text describing the workings of this program if the argument 'info' is found.
+     *
+     * @param args The run time argument this jar file is started with
+     */
     private static void printInfoIfSwitchIsFound(String[] args){
         for(String arg : args){
             if(arg.toLowerCase().equals("info")){
@@ -96,7 +108,11 @@ public class App {
         }
     }
 
-
+    /**
+     * Setting the address to the Testlink API endpoint.
+     *
+     * @param args Runtime arguments for this program.
+     */
     private static void setAddress(String[] args){
         for(String arg : args){
             if(arg.contains("=")){
@@ -121,6 +137,13 @@ public class App {
         }
     }
 
+    /**
+     *  Sets the user name used for communication with Testlink API. A username is used in
+     *  combination with a Developer key (DevKey). The DevKey is generated from the
+     *  Testlink GUI user account details page.
+     *
+     * @param args The runtime arguments for this program
+     */
     private static void setUserName(String[] args){
         for(String arg : args){
             if(arg.contains("=")){
@@ -145,6 +168,14 @@ public class App {
         }
     }
 
+    /**
+     * When registering a TAF test run to Testlink sometimes no corresponding test case
+     * can be identified in Testlink. This utilitiy then creates a test case in Testlink.
+     * This method is used to set the name of the default test project in Testlink
+     * where this test case is created.
+     *
+     * @param args The runtime arguments of this program.
+     */
     private static void setDefaultTestProjectIfStatedAsAParameter(String[] args){
         for(String arg: args){
             if(arg.contains("=")){
@@ -156,6 +187,14 @@ public class App {
         }
     }
 
+    /**
+     * When registering a TAF test run to Testlink sometimes no corresponding test case
+     * can be identified in Testlink. This utilitiy then creates a test case in Testlink.
+     * This method is used to set the name of the default test suite in Testlink
+     * where this test case is created.
+     *
+     * @param args The runtime arguments of this program.
+     */
     private static void setDefaultTestSuiteIfStatedAsAParameter(String[] args){
         for(String arg: args){
             if(arg.contains("=")){
@@ -167,6 +206,12 @@ public class App {
         }
     }
 
+    /**
+     * Testlink connection attempts has a timeout for establishing a successful connection.
+     * This method sets the timeout from runtime parameters.
+     *
+     * @param args The runtime arguments of this program
+     */
     private static void setConnectionTimeoutIfStatedAsAParameter(String[] args){
         for(String arg: args){
             if(arg.contains("=")){
@@ -178,6 +223,14 @@ public class App {
         }
     }
 
+    /**
+     * When registering a TAF test run to Testlink sometimes no corresponding test case
+     * can be identified in Testlink. This utilitiy then creates a test case in Testlink.
+     * This method is used to set the name of the default test plan in Testlink
+     * where this test case is created.
+     *
+     * @param args The runtime arguments of this program.
+     */
     private static void setDefaultTestPlanIfStatedAsAParameter(String[] args){
         for(String arg: args){
             if(arg.contains("=")){
@@ -189,7 +242,11 @@ public class App {
         }
     }
 
-
+    /**
+     * This is the main program executor
+     *
+     * @param args Runtime arguments
+     */
     public static void main(String[] args){
         //originalOutputChannel = System.out;
         System.out.println(helpText());
@@ -226,36 +283,4 @@ public class App {
             server.stop();
         }
     }
-
-
-
-    /*
-    private static boolean checkTestlinkServerConnection() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<String> future = executor.submit(new ConnectionTester());
-        boolean connected = false;
-        try {
-            System.out.print("Checking connection to Testlink server. ");
-            System.out.println(future.get(10, TimeUnit.SECONDS));
-            connected = true;
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            System.out.println("Connection could not be established.");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        executor.shutdownNow();
-        return connected;
-    }
-
-    private static class ConnectionTester implements Callable<String> {
-        @Override
-        public String call() throws Exception{
-            TestlinkClient client = new TestlinkClient();
-            return "Connection established.";
-        }
-    }
-    */
 }
