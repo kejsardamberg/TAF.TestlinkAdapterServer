@@ -72,17 +72,18 @@ public class Resource {
     @Path("v1/testrun")
     public String postTestRun(String testRun) {
         System.out.println("Received POST request to /taftestlinkadapter/v1/testrun/ with content: '" + testRun + "'." + System.lineSeparator());
-        TestRunRegistration testRunRegistration = new TestRunRegistration(testRun);
+        TestRunRegistration testRunRegistration = new TestRunRegistration();
         try{
+            testRunRegistration.reportTestRun(testRun);
             return testRunRegistration.log.toString();
         } catch (Exception e){
-            System.out.println(e.getMessage() + ". Cause: " + e.getCause());
+            System.out.println("Could not register test run. Error: " + e.getMessage() + ". Cause: " + e.getCause());
             StringBuilder error = new StringBuilder();
             for(StackTraceElement stackTraceElement : e.getStackTrace()){
                 error.append(stackTraceElement.toString()).append(System.lineSeparator());
             }
             System.out.println(error);
-            return testRunRegistration.debugLog.toString() + System.lineSeparator() + System.lineSeparator() + "Not Ok: " + e.getMessage() + System.lineSeparator() + error.toString();
+            return "Problem. Could not register test run to Testlink. Error: " + e.getMessage() + System.lineSeparator() + System.lineSeparator() + "Debug log entries for test run registration from TAF Testlink Adapter Server:" + System.lineSeparator() + testRunRegistration.debugLog.toString() + System.lineSeparator() + System.lineSeparator() + error.toString();
         }
     }
 }

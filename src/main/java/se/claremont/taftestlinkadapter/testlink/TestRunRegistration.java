@@ -9,7 +9,6 @@ import se.claremont.taftestlinkadapter.server.Settings;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -22,23 +21,29 @@ import java.util.List;
  */
 public class TestRunRegistration {
     private TestlinkReporter testlinkReporter = null;
-    private List<TestProject> testProjects = new ArrayList<>();
-    private List<TestPlan> testPlans = new ArrayList<>();
-    private List<TestSuite> testSuites = new ArrayList<>();
-    private List<TestCase> testCases = new ArrayList<>();
     private Boolean defaultTestSuiteFound = null;
     private Integer defaultTestSuiteId = null;
+    private TestlinkElementCache cache = new TestlinkElementCache();
     public StringBuilder log = new StringBuilder();
     public StringBuilder debugLog = new StringBuilder();
 
-    public TestRunRegistration(String testRun) {
+    public TestRunRegistration() {
+    }
+
+    public class TestResultsProblemException extends Exception {
+        public TestResultsProblemException(String message) {
+            super(message);
+        }
+    }
+
+    public void reportTestRun(String testRun) throws Exception{
         log("Reporting TAF test run results to Testlink endpoint '" + Settings.testlinkServerAddress + "'.");
         testlinkReporter = new TestlinkReporter();
-        if(testRun == null)return;
+        if(testRun == null || testRun.length() == 0) throw new TestResultsProblemException("Empty JSON to extract TAF TestRun from. Nothing to register to Testlink.");
         EventStoreManager.registerTestRun(testRun);
         TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun = getTestlinkReporterObject(testRun);
-        if(testlinkTestCasesFromTestRun== null) return;
-        updateCache();
+        if(testlinkTestCasesFromTestRun== null) throw new TestResultsProblemException("Could not find any test cases in TAF TestRun JSON.");
+        logToDebugLog(cache.updateContent(testlinkReporter));
         reportTestCases(testlinkTestCasesFromTestRun);
         log("Reported all test cases.");
     }
@@ -58,7 +63,7 @@ public class TestRunRegistration {
     }
 
 
-    private void reportTestCases(TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun){
+    private void reportTestCases(TestlinkTestCasesFromTestRun testlinkTestCasesFromTestRun) throws Exception{
         for(TestlinkTestCaseMapper testCase : testlinkTestCasesFromTestRun.testCases){
             if(testCase == null) continue;
             reportTestCaseToTestlink(testCase);
@@ -78,14 +83,31 @@ public class TestRunRegistration {
         return testlinkTestCasesFromTestRun;
     }
 
-    private void reportTestCaseToTestlink(TestlinkTestCaseMapper testCase){
+    private void reportTestCaseToTestlink(TestlinkTestCaseMapper testCase) throws Exception{
         //noinspection ConstantConditions
+        logToDebugLog("Starting registration of test case '" + testCase.testSetName + "/" + testCase.testName + "'.");
         TestCaseMatch testCaseToWorkWith = identifyTestCaseToReportTo2(testCase);
         if(testCaseToWorkWith == null) {
-            log("Oups! Something went wrong identifying or creating test case in Testlink.");
+            log("Could neither identify nor create test case in Testlink for test case '" + testCase.testSetName + "/" + testCase.testName + "'.");
             return;
         }
+        markTestCaseAsAutomatedIfItIsNotAlreadyMarkedAsAutomated(testCaseToWorkWith);
         log(postTestCaseResultToTestlink(testCaseToWorkWith, testCase));
+    }
+
+    private void markTestCaseAsAutomatedIfItIsNotAlreadyMarkedAsAutomated(TestCaseMatch testCaseToWorkWith) {
+        if(testCaseToWorkWith.testCase.getExecutionType().equals(ExecutionType.AUTOMATED))return;
+        try{
+            testlinkReporter.api.api.setTestCaseExecutionType(
+                    testCaseToWorkWith.projectId,
+                    testCaseToWorkWith.testCase.getId(),
+                    Integer.parseInt(testCaseToWorkWith.testCase.getFullExternalId()),
+                    testCaseToWorkWith.testCase.getVersion(),
+                    ExecutionType.AUTOMATED);
+            logToDebugLog("The identified Testlink test case is not marked as automated in Testlink. Changing Testlink ExecutionType to AUTOMATED for test case '" + testCaseToWorkWith.testCase.getName() + "'.");
+        }catch (Exception e){
+            log("Something went wrong when trying to mark test case '" + testCaseToWorkWith.testCase.getName() + " as ExecutionType AUTOMATED in Testlink. Error message: " + e.getMessage());
+        }
     }
 
     private String postTestCaseResultToTestlink(TestCaseMatch testCaseMatch, TestlinkTestCaseMapper testCase){
@@ -106,141 +128,50 @@ public class TestRunRegistration {
         return "Reported test case '" + testCase.testSetName + "/" + testCase.testName + "' to '" + testCaseMatch.testCase.toString() + "'. Results: " + results.getMessage();
     }
 
-    private void clearCache(){
-        testProjects.clear();
-        testPlans.clear();
-        testSuites.clear();
-        testCases.clear();
-    }
-
-    private void updateCache(){
-        clearCache();
-        logToDebugLog("Updating cache.");
-        TestProject[] projects = testlinkReporter.api.api.getProjects();
-        Collections.addAll(testProjects, projects);
-        for(TestProject project : testProjects){
-            TestPlan[] plans = testlinkReporter.api.api.getProjectTestPlans(project.getId());
-            Collections.addAll(testPlans, plans);
-        }
-        for(TestPlan plan : testPlans){
-            TestSuite[] suites = testlinkReporter.api.api.getTestSuitesForTestPlan(plan.getId());
-            Collections.addAll(testSuites, suites);
-        }
-        for(TestPlan plan : testPlans){
-            TestCase[] cases = testlinkReporter.api.api.getTestCasesForTestPlan(plan.getId(), null, null, null, null, null, null, null, null, null, null);
-            Collections.addAll(testCases, cases);
-        }
-        for(TestSuite suite : testSuites){
-            TestCase[] cases = testlinkReporter.api.api.getTestCasesForTestSuite(suite.getId(), true, null);
-            for(TestCase testCase : cases){
-                boolean alreadyRegistered = false;
-                for(TestCase alreadyRegisteredTestCase : testCases){
-                    if(alreadyRegisteredTestCase.getId().equals(testCase.getId())) {
-                        alreadyRegistered = true;
-                        break;
-                    }
-                }
-                if(!alreadyRegistered){
-                    testCases.add(testCase);
-                }
-            }
-        }
-        logToDebugLog("Cache status: " + System.lineSeparator() + " * " + testProjects.size() + " test projects" + System.lineSeparator() + " * " + testSuites.size() + " test suites" + System.lineSeparator() + " * " + testPlans.size() + " test plans" + System.lineSeparator() + " * " + testCases.size() + " test cases");
-    }
-
     private TestCaseMatch identifyTestCaseToReportTo2(TestlinkTestCaseMapper testCase) {
-        List<TestCase> potentialMatches = new ArrayList<>();
-        for(TestCase registeredTestCase : testCases){
-            if(registeredTestCase.getName().contains(testCase.testName)){
-                potentialMatches.add(registeredTestCase);
+        List<TestCase> potentialMatches = identifyPotentialMatches(testCase);
+        if(potentialMatches.size() == 0){
+            return createNewTestCase(testCase);
+        } else if (potentialMatches.size() == 1){
+            return getTestCaseMatch(testCase, potentialMatches);
+        } else {
+            TestCaseMatch singleAutomatedTestCase = getSingleTestCaseMarkedAsAutomated(potentialMatches, testCase);
+            if(singleAutomatedTestCase != null) return singleAutomatedTestCase;
+            TestCaseMatch exactNameMatchingTestCase = identifyTestCaseWithExactNameMatch(potentialMatches, testCase);
+            if(exactNameMatchingTestCase != null) return exactNameMatchingTestCase;
+
+            List<TestCase> containsTestSuiteNameMatchesToTestSetName = identifyTestCasesWithTestSuiteNameCorrespondingToTafTestSetName(testCase, potentialMatches);
+            if(containsTestSuiteNameMatchesToTestSetName.size() == 1) return getSingleTestCaseWithBothTestSetAndTestNameContainsMatch(testCase, containsTestSuiteNameMatchesToTestSetName);
+
+            TestCaseMatch exactTestSetNameMatchAndTestNameMatch = getTestCaseWithExactTestSetNameMatchAndTestNameMatch(containsTestSuiteNameMatchesToTestSetName, testCase);
+            if(exactTestSetNameMatchAndTestNameMatch != null) return exactTestSetNameMatchAndTestNameMatch;
+        }
+        return getFirstTestCaseMatch(testCase, potentialMatches);
+    }
+
+    private TestCaseMatch getSingleTestCaseMarkedAsAutomated(List<TestCase> potentialMatches, TestlinkTestCaseMapper testCase) {
+        List<TestCase> potentialTestCaseMatchesMarkedAsAutomated = new ArrayList<>();
+        for(TestCase potentialMatch : potentialMatches){
+            if(potentialMatch.getExecutionType().equals(ExecutionType.AUTOMATED)){
+                potentialTestCaseMatchesMarkedAsAutomated.add(potentialMatch);
             }
         }
-
-        if(potentialMatches.size() == 0){
-            logToDebugLog("Zero potential matches for test case found in Testlink.");
-            TestCaseMatch testCaseMatch = createTestCaseInTestlink(testCase);
-            testCases.add(testCaseMatch.testCase);
-            return testCaseMatch;
-        } else if (potentialMatches.size() == 1){
-            logToDebugLog("Found exactly one Testlink test case with a name containing the TAF test case name. Using test case '" + potentialMatches.get(0).getName() + "' for reporting.");
-            TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
+        if(potentialTestCaseMatchesMarkedAsAutomated.size() == 1){
             TestProject testProject = null;
-            for(TestProject testProject1 : testProjects){
-                if(testProject1.getId().equals(theTestCaseInstanceInTestlink.getTestProjectId())){
+            for(TestProject testProject1 : cache.testProjects){
+                if(testProject1.getId().equals(potentialTestCaseMatchesMarkedAsAutomated.get(0).getTestProjectId())){
                     testProject = testProject1;
                     break;
                 }
             }
-            if(testProject == null) testProject = identifyTestProject(testCase);
             TestPlan testPlan = identifyTestPlan(testProject, testCase);
             Build build = identifyBuild(testPlan);
-            return new TestCaseMatch(theTestCaseInstanceInTestlink, testPlan.getId(), theTestCaseInstanceInTestlink.getTestSuiteId(), theTestCaseInstanceInTestlink.getTestProjectId(), build.getId() );
-        } else {
-            List<TestCase> exactNameMatches = new ArrayList<>();
-            for(TestCase potentialMatch : potentialMatches){
-                if(potentialMatch.getName().equals(testCase.testName)){
-                    exactNameMatches.add(potentialMatch);
-                }
-            }
-            if(exactNameMatches.size() == 1) {
-                logToDebugLog("Found exactly one Testlink test case with a name exactly as the TAF test case name. Using test case '" + exactNameMatches.get(0).getName() + "' for reporting.");
-                TestProject testProject = null;
-                for(TestProject testProject1 : testProjects){
-                    if(testProject1.getId().equals(exactNameMatches.get(0).getTestProjectId())){
-                        testProject = testProject1;
-                        break;
-                    }
-                }
-                TestPlan testPlan = identifyTestPlan(testProject, testCase);
-                Build build = identifyBuild(testPlan);
-                return new TestCaseMatch(exactNameMatches.get(0), testPlan.getId(), exactNameMatches.get(0).getTestSuiteId(), exactNameMatches.get(0).getTestProjectId(), build.getId() );
-            }
-            List<TestCase> containsTestSuiteNameMatchesToTestSetName = new ArrayList<>();
-            for(TestCase potentialMatch : potentialMatches){
-                List<Integer> suiteIds = new ArrayList<>();
-                suiteIds.add(potentialMatch.getTestSuiteId());
-                TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
-                for(TestSuite suite : testSuites){
-                    if(suite.getName().contains(testCase.testSetName)){
-                        containsTestSuiteNameMatchesToTestSetName.add(potentialMatch);
-                        //return new TestCaseMatch(potentialMatch, null, suite.getId(), potentialMatch.getTestProjectId(), null );
-                    }
-                }
-            }
-            if(containsTestSuiteNameMatchesToTestSetName.size() == 1) {
-                logToDebugLog("Found exactly one Testlink test case with both a name corresponding to the TAF test case '" + testCase.testName + "', and a test suite '" + containsTestSuiteNameMatchesToTestSetName.get(0).getName() + "' containing the TAF TestSet name '" + testCase.testSetName + "'.");
-                TestProject testProject = null;
-                for(TestProject testProject1 : testProjects){
-                    if(testProject1.getId().equals(containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId())){
-                        testProject = testProject1;
-                        break;
-                    }
-                }
-                TestPlan testPlan = identifyTestPlan(testProject, testCase);
-                Build build = identifyBuild(testPlan);
-                return new TestCaseMatch(containsTestSuiteNameMatchesToTestSetName.get(0), testPlan.getId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestSuiteId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId(), build.getId() );
-            }
-            for (TestCase potentialExactTestSuiteNameMatchToTestSetName : containsTestSuiteNameMatchesToTestSetName){
-                List<Integer> suiteIds = new ArrayList<>();
-                suiteIds.add(potentialExactTestSuiteNameMatchToTestSetName.getTestSuiteId());
-                TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
-                for(TestSuite suite : testSuites){
-                    if(suite.getName().equals(testCase.testSetName)){
-                        logToDebugLog("Found exactly one Testlink test case with both a name ('" + potentialExactTestSuiteNameMatchToTestSetName.getName() + "') corresponding to the TAF test case name '" + testCase.testName + "', and a test suite '" + suite.getName() + "' exactly matching the TAF TestSet name '" + testCase.testSetName + "'.");
-                        TestProject testProject = null;
-                        for(TestProject testProject1 : testProjects){
-                            if(testProject1.getId().equals(potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId())){
-                                testProject = testProject1;
-                                break;
-                            }
-                        }
-                        TestPlan testPlan = identifyTestPlan(testProject, testCase);
-                        Build build = identifyBuild(testPlan);
-                        return new TestCaseMatch(potentialExactTestSuiteNameMatchToTestSetName, testPlan.getId(), potentialExactTestSuiteNameMatchToTestSetName.getTestSuiteId(), potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId(), build.getId() );
-                    }
-                }
-            }
+            return new TestCaseMatch(potentialTestCaseMatchesMarkedAsAutomated.get(0), testPlan.getId(), potentialTestCaseMatchesMarkedAsAutomated.get(0).getTestSuiteId(), potentialTestCaseMatchesMarkedAsAutomated.get(0).getTestProjectId(), build.getId() );
         }
+        return null;
+    }
+
+    private TestCaseMatch getFirstTestCaseMatch(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
         StringBuilder logMessage = new StringBuilder("Found multiple potential test cases for result reporting in Testlink. Using the first potential Testlink test case since there are several matching the test case." + System.lineSeparator());
         for(TestCase potentialMatch : potentialMatches){
             logMessage.append(" * Test case name: '").append(potentialMatch.getName()).append("' (suite id: ").append(potentialMatch.getId()).append(").").append(System.lineSeparator());
@@ -249,7 +180,7 @@ public class TestRunRegistration {
         logToDebugLog(logMessage.toString());
         TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
         TestProject testProject = null;
-        for(TestProject testProject1 : testProjects){
+        for(TestProject testProject1 : cache.testProjects){
             if(testProject1.getId().equals(theTestCaseInstanceInTestlink.getTestProjectId())){
                 testProject = testProject1;
                 break;
@@ -258,6 +189,116 @@ public class TestRunRegistration {
         TestPlan testPlan = identifyTestPlan(testProject, testCase);
         Build build = identifyBuild(testPlan);
         return new TestCaseMatch(theTestCaseInstanceInTestlink, testPlan.getId(), theTestCaseInstanceInTestlink.getTestSuiteId(), theTestCaseInstanceInTestlink.getTestProjectId(), build.getId() );
+    }
+
+    private TestCaseMatch getTestCaseWithExactTestSetNameMatchAndTestNameMatch(List<TestCase> containsTestSuiteNameMatchesToTestSetName, TestlinkTestCaseMapper testCase){
+        for (TestCase potentialExactTestSuiteNameMatchToTestSetName : containsTestSuiteNameMatchesToTestSetName){
+            List<Integer> suiteIds = new ArrayList<>();
+            suiteIds.add(potentialExactTestSuiteNameMatchToTestSetName.getTestSuiteId());
+            TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
+            for(TestSuite suite : testSuites){
+                if(suite.getName().equals(testCase.testSetName)){
+                    logToDebugLog("Found exactly one Testlink test case with both a name ('" + potentialExactTestSuiteNameMatchToTestSetName.getName() + "') corresponding to the TAF test case name '" + testCase.testName + "', and a test suite '" + suite.getName() + "' exactly matching the TAF TestSet name '" + testCase.testSetName + "'.");
+                    TestProject testProject = null;
+                    for(TestProject testProject1 : cache.testProjects){
+                        if(testProject1.getId().equals(potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId())){
+                            testProject = testProject1;
+                            break;
+                        }
+                    }
+                    TestPlan testPlan = identifyTestPlan(testProject, testCase);
+                    Build build = identifyBuild(testPlan);
+                    return new TestCaseMatch(potentialExactTestSuiteNameMatchToTestSetName, testPlan.getId(), potentialExactTestSuiteNameMatchToTestSetName.getTestSuiteId(), potentialExactTestSuiteNameMatchToTestSetName.getTestProjectId(), build.getId() );
+                }
+            }
+        }
+        return null;
+    }
+
+    private TestCaseMatch getSingleTestCaseWithBothTestSetAndTestNameContainsMatch(TestlinkTestCaseMapper testCase, List<TestCase> containsTestSuiteNameMatchesToTestSetName) {
+        logToDebugLog("Found exactly one Testlink test case with both a name corresponding to the TAF test case '" + testCase.testName + "', and a test suite '" + containsTestSuiteNameMatchesToTestSetName.get(0).getName() + "' containing the TAF TestSet name '" + testCase.testSetName + "'.");
+        TestProject testProject = null;
+        for(TestProject testProject1 : cache.testProjects){
+            if(testProject1.getId().equals(containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId())){
+                testProject = testProject1;
+                break;
+            }
+        }
+        TestPlan testPlan = identifyTestPlan(testProject, testCase);
+        Build build = identifyBuild(testPlan);
+        return new TestCaseMatch(containsTestSuiteNameMatchesToTestSetName.get(0), testPlan.getId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestSuiteId(), containsTestSuiteNameMatchesToTestSetName.get(0).getTestProjectId(), build.getId() );
+    }
+
+    private List<TestCase> identifyTestCasesWithTestSuiteNameCorrespondingToTafTestSetName(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
+        List<TestCase> containsTestSuiteNameMatchesToTestSetName = new ArrayList<>();
+        for(TestCase potentialMatch : potentialMatches){
+            List<Integer> suiteIds = new ArrayList<>();
+            suiteIds.add(potentialMatch.getTestSuiteId());
+            TestSuite[] testSuites = testlinkReporter.api.api.getTestSuiteByID(suiteIds);
+            for(TestSuite suite : testSuites){
+                if(suite.getName().contains(testCase.testSetName)){
+                    containsTestSuiteNameMatchesToTestSetName.add(potentialMatch);
+                    //return new TestCaseMatch(potentialMatch, null, suite.getId(), potentialMatch.getTestProjectId(), null );
+                }
+            }
+        }
+        return containsTestSuiteNameMatchesToTestSetName;
+    }
+
+    private List<TestCase> identifyPotentialMatches(TestlinkTestCaseMapper testCase) {
+        List<TestCase> potentialMatches = new ArrayList<>();
+        for(TestCase registeredTestCase : cache.testCases){
+            if(registeredTestCase.getName().contains(testCase.testName)){
+                potentialMatches.add(registeredTestCase);
+            }
+        }
+        return potentialMatches;
+    }
+
+    private TestCaseMatch identifyTestCaseWithExactNameMatch(List<TestCase> potentialMatches, TestlinkTestCaseMapper testCase){
+        List<TestCase> exactNameMatches = new ArrayList<>();
+        for(TestCase potentialMatch : potentialMatches){
+            if(potentialMatch.getName().equals(testCase.testName)){
+                exactNameMatches.add(potentialMatch);
+            }
+        }
+        if(exactNameMatches.size() == 1) {
+            logToDebugLog("Found exactly one Testlink test case with a name exactly as the TAF test case name. Using test case '" + exactNameMatches.get(0).getName() + "' for reporting.");
+            TestProject testProject = null;
+            for(TestProject testProject1 : cache.testProjects){
+                if(testProject1.getId().equals(exactNameMatches.get(0).getTestProjectId())){
+                    testProject = testProject1;
+                    break;
+                }
+            }
+            TestPlan testPlan = identifyTestPlan(testProject, testCase);
+            Build build = identifyBuild(testPlan);
+            return new TestCaseMatch(exactNameMatches.get(0), testPlan.getId(), exactNameMatches.get(0).getTestSuiteId(), exactNameMatches.get(0).getTestProjectId(), build.getId() );
+        }
+        return null;
+    }
+
+    private TestCaseMatch getTestCaseMatch(TestlinkTestCaseMapper testCase, List<TestCase> potentialMatches) {
+        logToDebugLog("Found exactly one Testlink test case with a name containing the TAF test case name. Using test case '" + potentialMatches.get(0).getName() + "' for reporting.");
+        TestCase theTestCaseInstanceInTestlink = potentialMatches.get(0);
+        TestProject testProject = null;
+        for(TestProject testProject1 : cache.testProjects){
+            if(testProject1.getId().equals(theTestCaseInstanceInTestlink.getTestProjectId())){
+                testProject = testProject1;
+                break;
+            }
+        }
+        if(testProject == null) testProject = identifyTestProject(testCase);
+        TestPlan testPlan = identifyTestPlan(testProject, testCase);
+        Build build = identifyBuild(testPlan);
+        return new TestCaseMatch(theTestCaseInstanceInTestlink, testPlan.getId(), theTestCaseInstanceInTestlink.getTestSuiteId(), theTestCaseInstanceInTestlink.getTestProjectId(), build.getId() );
+    }
+
+    private TestCaseMatch createNewTestCase(TestlinkTestCaseMapper testCase) {
+        logToDebugLog("Zero potential matches for test case found in Testlink.");
+        TestCaseMatch testCaseMatch = createTestCaseInTestlink(testCase);
+        cache.testCases.add(testCaseMatch.testCase);
+        return testCaseMatch;
     }
 
 
@@ -331,18 +372,18 @@ public class TestRunRegistration {
 
         //Else create a new test plan
         TestPlan newTestPlan = testlinkReporter.api.api.createTestPlan(Settings.defaultTestPlanName, testProject.getName(), null, true, true);
-        testPlans.add(newTestPlan);
+        cache.testPlans.add(newTestPlan);
         return newTestPlan;
     }
 
     private TestSuite identifyTestSuite(TestProject testProject, TestlinkTestCaseMapper testCase) {
         //If a Testlink test suite exist with a name corresponding to the testCase TestSet, and with a Testlink TestCase with the same name as the TAF test case name, return this.
-        for(TestSuite testSuite : testSuites){
+        for(TestSuite testSuite : cache.testSuites){
             if(testSuite.getName().equals(testCase.testSetName)){
-                for(TestCase test : testCases){
+                for(TestCase test : cache.testCases){
                     if(test.getTestSuiteId() == null) continue;
                     if(test.getTestSuiteId().equals(testSuite.getId()) && testCase.testName.equals(test.getName())){
-                        for(TestProject project : testProjects){
+                        for(TestProject project : cache.testProjects){
                             if(project.getId().equals(testSuite.getTestProjectId())){
                                 return testSuite;
                             }
@@ -355,7 +396,7 @@ public class TestRunRegistration {
         //Create default test test suite for orphan test cases if needed
         if(!defaultTestSuiteFound){
             TestSuite newlyCreatedDefaultTestSuite = testlinkReporter.api.api.createTestSuite(testProject.getId(), Settings.defaultTestSuiteNameForNewTestCases, null, null, null, null, null);
-            testSuites.add(newlyCreatedDefaultTestSuite);
+            cache.testSuites.add(newlyCreatedDefaultTestSuite);
             defaultTestSuiteId = newlyCreatedDefaultTestSuite.getId();
         }
         //If a test suite with the same name as the test set exist, return it
@@ -367,22 +408,22 @@ public class TestRunRegistration {
         }
         //Else create it and return it
         TestSuite newlyCreatedTestSuite = testlinkReporter.api.api.createTestSuite(testProject.getId(), testCase.testSetName, null, defaultTestSuiteId, null, null, null);
-        testSuites.add(newlyCreatedTestSuite);
+        cache.testSuites.add(newlyCreatedTestSuite);
         return newlyCreatedTestSuite;
     }
 
     private TestProject identifyTestProject(TestlinkTestCaseMapper testCase) {
         Integer projectId = null;
-        if(testProjects.size() == 1){
+        if(cache.testProjects.size() == 1){
             //If only one test project exist this should be used
-            return testProjects.get(0);
+            return cache.testProjects.get(0);
         } else {
             //Try finding a Testlink project with a TestSuite with the same name as the TAF testCase TestSet.
-            for(TestSuite testSuite : testSuites){
+            for(TestSuite testSuite : cache.testSuites){
                 if(testSuite.getName().equals(testCase.testSetName)){
-                    for(TestCase test : testCases){
+                    for(TestCase test : cache.testCases){
                         if(test.getTestSuiteId().equals(testSuite.getId()) && testCase.testName.equals(test.getName())){
-                            for(TestProject project : testProjects){
+                            for(TestProject project : cache.testProjects){
                                 if(project.getId().equals(testSuite.getTestProjectId())){
                                     return project;
                                 }
@@ -392,14 +433,14 @@ public class TestRunRegistration {
                 }
             }
             //Return default TestProject in Testlink if exist
-            for(TestProject testProject : testProjects){
+            for(TestProject testProject : cache.testProjects){
                 if(testProject.getName().equals(Settings.defaultTestProjectNameForNewTestCases)){
                     return testProject;
                 }
             }
             //Othervice create a new default TestProject in Testlink
             TestProject newlyCreatedTestProject = testlinkReporter.api.api.createTestProject(Settings.defaultTestProjectNameForNewTestCases, "ZX", "Automatically created for test automation test cases that cannot be identified already", true, true, true, true, true, true);
-            testProjects.add(newlyCreatedTestProject);
+            cache.testProjects.add(newlyCreatedTestProject);
             return newlyCreatedTestProject;
         }
 

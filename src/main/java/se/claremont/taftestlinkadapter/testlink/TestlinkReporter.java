@@ -18,6 +18,12 @@ public class TestlinkReporter {
     public TestlinkClient api = null;
     public String logMessage = System.lineSeparator();
 
+    public class TestLinkConnectionException extends Exception {
+        public TestLinkConnectionException(String message) {
+            super(message);
+        }
+    }
+
     /**
      * Setup connection
      */
