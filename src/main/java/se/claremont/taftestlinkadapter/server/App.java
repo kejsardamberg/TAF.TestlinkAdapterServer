@@ -21,13 +21,13 @@ public class App {
         return System.lineSeparator() +
                 "TAF Testlink Adapter Server" + System.lineSeparator() +
                 "===============================" + System.lineSeparator() +
-                "Usage example:" + System.lineSeparator() +
-                "java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser'" + System.lineSeparator() +
+                "Usage example:" + System.lineSeparator() + System.lineSeparator() +
+                "   java -jar TafTestlinkAdapterServer.jar testlinkaddress=http://mytestlinkserver.mycompany.com:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php devkey=2a861343a3dca60b876ca5b6567568de username=taftestlinkuser port=2221" + System.lineSeparator() + System.lineSeparator() +
                 "where port number is the TAF Testlink Adapter Server port number for TAF to connect to, also stated as the TCP port in the URL given as a run settings parameter in the TAF test run (e.g. http://localhost:8080/taftestlinkadapter)." + System.lineSeparator() +
-                "Default TCP port is 81 - chosen not to collide with potential Testlink installation on default http port 80 the same machine. The important part is that it should not be a port in use already, by Testlink or other web server." + System.lineSeparator() +
+                "Default TCP port is 2221 - chosen not to collide with potential Testlink installation on default http port 80 the same machine. The important part is that it should not be a port in use already, by Testlink or other web server." + System.lineSeparator() +
                 System.lineSeparator() +
-                "If you want to understand how TAF Testlink Adapter Server works, and should be applied, use the switch:" + System.lineSeparator() + System.lineSeparator() +
-                "   java -jar TafTestlinkAdapterServer.jar info" + System.lineSeparator() + System.lineSeparator();
+                "If you want to understand how TAF Testlink Adapter Server works, and should be applied, and what other switches exist, use the switch:" + System.lineSeparator() + System.lineSeparator() +
+                "   java -jar TafTestlinkAdapterServer.jar -help" + System.lineSeparator();
     }
 
     /**
@@ -35,23 +35,54 @@ public class App {
      *
      * @param args The run time argument this jar file is started with
      */
-    private static void printInfoIfSwitchIsFound(String[] args){
+    private static void printHelpTextIfSwitchIsFound(String[] args){
         for(String arg : args){
-            if(arg.toLowerCase().equals("info")){
-                System.out.println(System.lineSeparator() + "This server is used as a proxy between a Testlink server and a TAF test automation. " + System.lineSeparator() +
-                        "It require some parameters to start this TAF Testlink Adapter Server, and one minor addition to your TAF tests." + System.lineSeparator() +
+            if(arg.toLowerCase().equals("info") || arg.equals("-help") || arg.equals("man") || arg.equals("--help") || arg.equals("-h")){
+                System.out.println(System.lineSeparator() + "This server is used as a proxy between a TAF test automation and a Testlink server. It produces test run results to Testlink for TAF test runs. " + System.lineSeparator() + System.lineSeparator() +
+                        "Getting the TAF Testlink Adapter Server started" + System.lineSeparator() +
+                        "--------------------------------------------------" + System.lineSeparator() +
+                        "A few different command line parameters can be used at TAF Testlink Adapter Server startup:" + System.lineSeparator() + System.lineSeparator() +
+                        "Required parameters:" + System.lineSeparator() +
+                        "     testlinkaddress=http://testlink.mycompany.com/testlink/lib/api/xmlrpc/v1/xmlrpc.php" + System.lineSeparator() +
+                        "                                              Make sure the full adress to the Testlink" + System.lineSeparator() +
+                        "                                              API endpoint is there." + System.lineSeparator() + System.lineSeparator() +
+                        "     username=taftestlinkuser                 Used to create test cases in Testlink, so" + System.lineSeparator() +
+                        "                                              make sure you use a valid user name for" + System.lineSeparator() +
+                        "                                              Testlink." + System.lineSeparator() + System.lineSeparator() +
+                        "     devkey=2a861343a3dca60b876ca5b6567568de  You can find the Testlink API DevKey on the" + System.lineSeparator() +
+                        "                                              user page in Testlink, called 'API interface" + System.lineSeparator() +
+                        "                                              Personal API access key'." + System.lineSeparator() + System.lineSeparator() +
+                        "Optional parameters that change behaviour of this server:" + System.lineSeparator() +
+                        "     port=2221                                Port number is of your own choice. Make sure " + System.lineSeparator() +
+                        "                                              it is not the same as the Testlink server uses." + System.lineSeparator() + System.lineSeparator() +
+                        "     defaultTestProject=AutoTestProject       Makes test results for test cases that cannot " + System.lineSeparator() +
+                        "                                              be identified in Testlink be reported into this" + System.lineSeparator() +
+                        "                                              project." + System.lineSeparator() + System.lineSeparator() +
+                        "     defaultTestSuite=AutoTestOrphanTestCases Makes test results for test cases that cannot be" + System.lineSeparator() +
+                        "                                              identified in Testlink be reported to test cases" + System.lineSeparator() +
+                        "                                              in this test suite." + System.lineSeparator() + System.lineSeparator() +
+                        "     defaultTestPlan=AutoTestPlan             Makes test results for test cases that cannot be" + System.lineSeparator() +
+                        "                                              identified in Testlink be reported to test cases," + System.lineSeparator() +
+                        "                                              and build, within this test plan." + System.lineSeparator() + System.lineSeparator() +
+                        "     defaultBuild=AutotestBuild               If no suitable build is found in Testlink a build" + System.lineSeparator() +
+                        "                                              to report results to is created with this name.." + System.lineSeparator() + System.lineSeparator() +
+                        "     connectionTimeout=15                     Sets the connection timeout for Testlink server" + System.lineSeparator() +
+                        "                                              connection to 15 seconds." + System.lineSeparator() + System.lineSeparator() +
+                        "All of these run time parameters are case insensitive and the order of them are irrelevant." + System.lineSeparator() +
                         System.lineSeparator() +
                         "How this adapter works" + System.lineSeparator() +
                         "-----------------------------" + System.lineSeparator() +
-                        "The TAF test automation has a build in test runner and test listener. When a test run is finished a check is performed if " +
-                        "the test run settings parameter called:" + System.lineSeparator() +
+                        "If the TAF Settings parameter for 'TAF Testlink Adapter Server' address is set the TAF test runner automatically tries to send the test run results to this server." +
+                        "The settings parameter in TAF is called 'URL_TO_TESTLINK_ADAPTER' and is set thus (example):" + System.lineSeparator() +
                         System.lineSeparator() +
                         "    TestRun.setSettingsValue(Settings.SettingParameters.URL_TO_TESTLINK_ADAPTER, " +
                         "\"http://127.0.0.1:2221/taftestlinkadapter\");" + System.lineSeparator() +
                         System.lineSeparator() +
-                        "is changed from its original value (for the record: It is meant to substitute the address and port to your own ones in the line above)." +
+                        "After a TAF test run is complete it checks if this parameter is changed from its original value." + System.lineSeparator() +
                         "If it is actively set to something other than its default value an attempt to push the test result to the TAF Testlink Adapter Server will be performed. " + System.lineSeparator() + System.lineSeparator() +
-                        "The TAF Testlink Adapter Server has a few REST interfaces, and can display a few web pages. " + System.lineSeparator() +
+                        "Interfaces" + System.lineSeparator() +
+                        "-------------" + System.lineSeparator() +
+                        "This TAF Testlink Adapter Server has a few REST interfaces, and can display a few web pages. " + System.lineSeparator() +
                         System.lineSeparator() +
                         "The TAF test execution run results are formatted to JSON data format and POSTed to the TAF Testlink Adapter Server REST API." + System.lineSeparator() +
                         "The TAF Testlink Adapter Server then connects to the Testlink server and tries to identify the test cases to report results to. The identification sequence is as follows: " + System.lineSeparator() +
@@ -74,21 +105,6 @@ public class App {
                         System.lineSeparator() +
                         "The TAF Testlink Adapter Server also has a built in cache for Testlink resources, since lookup of these are quite slow. " +
                         "If it seem to behave badly, try restarting the server. The server will continuously present output while performing its tasks." + System.lineSeparator() +
-                        System.lineSeparator() +
-                        "Getting the TAF Testlink Adapter Server started" + System.lineSeparator() +
-                        "--------------------------------------------------" + System.lineSeparator() +
-                        "A few command line parameters are needed at TAF Testlink Adapter Server startup:" + System.lineSeparator() +
-                        "  port=2222 (Port number is of your own choice. Make sure it is not the same as the Testlink server uses." + System.lineSeparator() +
-                        "  username=taftestlinkuser (Used to create test cases in Testlink, so make sure you use a valid user name for Testlink." + System.lineSeparator() +
-                        "  testlinkaddress=http://mytestlinkserver:80/testlink/lib/api/xmlrpc/v1/xmlrpc.php (make sure the full adress to the Testlink API is there)" + System.lineSeparator() +
-                        "  devkey=2a861343a3dca60b876ca5b6567568de (you can find the Testlink API DevKey on the user page in Testlink, called 'API interface Personal API access key'.)" + System.lineSeparator() +
-                        "  defaultTestProject=AutoTestProject (makes test results for test cases that cannot be identified in Testlink be reported into this project)" + System.lineSeparator() +
-                        "  defaultTestSuite=AutoTestOrphanTestCases (makes test results for test cases that cannot be identified in Testlink be reported to test cases in this test suite)" + System.lineSeparator() +
-                        "  defaultTestPlan=AutoTestPlan (makes test results for test cases that cannot be identified in Testlink be reported to test cases, and build, within this test plan)" + System.lineSeparator() +
-                        "  defaultBuild=AutotestBuild (if no suitable build is found in Testlink a build to report results to is created with this name)." + System.lineSeparator() +
-                        "  connectionTimeout=15 (sets the connection timeout for Testlink server connection to 15 seconds." + System.lineSeparator() +
-                        System.lineSeparator() +
-                        "All of these run time parameters are case insensitive and the order of them are irrelevant." + System.lineSeparator() +
                         System.lineSeparator() +
                         "Modifications on the TAF tests" + System.lineSeparator() +
                         "----------------------------------" + System.lineSeparator() +
@@ -269,8 +285,11 @@ public class App {
      */
     public static void main(String[] args){
         //originalOutputChannel = System.out;
-        System.out.println(helpText());
-        printInfoIfSwitchIsFound(args);
+        if(args.length == 0){
+            System.out.println(helpText());
+            System.exit(0);
+        }
+        printHelpTextIfSwitchIsFound(args);
         System.out.println("Processing " + args.length + " runtime arguments.");
         setAddress(args);
         setDevKey(args);
