@@ -498,7 +498,7 @@ public class TestRunRegistration {
     private Build identifyBuild(TestPlan testPlan) {
         Build[] builds = testlinkReporter.api.api.getBuildsForTestPlan(testPlan.getId());
         if(builds.length == 1) return builds[0];
-        if(builds.length == 0) return testlinkReporter.api.api.createBuild(testPlan.getId(), "Default automation build", "Automatically created from TAF Testlink adapter server.");
+        if(builds.length == 0) return testlinkReporter.api.api.createBuild(testPlan.getId(), Settings.defaultBuildNameForNewTestCases, "Automatically created from TAF Testlink adapter server.");
         return testlinkReporter.api.api.getLatestBuildForTestPlan(testPlan.getId());
     }
 

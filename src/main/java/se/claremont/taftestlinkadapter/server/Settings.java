@@ -61,4 +61,11 @@ public class Settings {
      */
     public static String defaultTestPlanName = "Automated regression tests";
 
+
+    /**
+     * If a suitable test case to report results to cannot be identified in Testlink a new
+     * test case is created. If no suitable Testlink build object is found for this test case,
+     * the value for this parameter will be used as name for the new build.
+     */
+    public static String defaultBuildNameForNewTestCases = "Default automation build";
 }

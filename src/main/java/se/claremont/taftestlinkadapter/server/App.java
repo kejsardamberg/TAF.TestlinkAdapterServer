@@ -85,6 +85,7 @@ public class App {
                         "  defaultTestProject=AutoTestProject (makes test results for test cases that cannot be identified in Testlink be reported into this project)" + System.lineSeparator() +
                         "  defaultTestSuite=AutoTestOrphanTestCases (makes test results for test cases that cannot be identified in Testlink be reported to test cases in this test suite)" + System.lineSeparator() +
                         "  defaultTestPlan=AutoTestPlan (makes test results for test cases that cannot be identified in Testlink be reported to test cases, and build, within this test plan)" + System.lineSeparator() +
+                        "  defaultBuild=AutotestBuild (if no suitable build is found in Testlink a build to report results to is created with this name)." + System.lineSeparator() +
                         "  connectionTimeout=15 (sets the connection timeout for Testlink server connection to 15 seconds." + System.lineSeparator() +
                         System.lineSeparator() +
                         "All of these run time parameters are case insensitive and the order of them are irrelevant." + System.lineSeparator() +
@@ -207,6 +208,25 @@ public class App {
     }
 
     /**
+     * When registering a TAF test run to Testlink sometimes no corresponding test case
+     * can be identified in Testlink. This utilitiy then creates a test case in Testlink.
+     * This method is used to set the name of the default build in Testlink
+     * where this test case is created.
+     *
+     * @param args The runtime arguments of this program.
+     */
+    private static void setDefaultBuildNameIfStatedAsAParameter(String[] args){
+        for(String arg: args){
+            if(arg.contains("=")){
+                if(arg.split("=")[0].toLowerCase().equals("defaultbuild") && arg.split("=").length > 1 && arg.split("=")[1].trim().length() > 0){
+                    System.out.println("Setting default Testlink build name to " + arg.split("=")[1]);
+                    Settings.defaultBuildNameForNewTestCases = arg.split("=")[1];
+                }
+            }
+        }
+    }
+
+    /**
      * Testlink connection attempts has a timeout for establishing a successful connection.
      * This method sets the timeout from runtime parameters.
      *
@@ -259,6 +279,7 @@ public class App {
         setDefaultTestProjectIfStatedAsAParameter(args);
         setDefaultTestPlanIfStatedAsAParameter(args);
         setDefaultTestSuiteIfStatedAsAParameter(args);
+        setDefaultBuildNameIfStatedAsAParameter(args);
         setConnectionTimeoutIfStatedAsAParameter(args);
         if(Settings.testlinkDevKey == null || Settings.testlinkServerAddress == null || Settings.testlinkUserName == null){
             System.out.println("Cannot start server. Required parameter missing.");
