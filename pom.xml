@@ -39,24 +39,6 @@
             <name>Sonartype</name>
             <url>https://oss.sonatype.org</url>
         </repository>
-        <repository>
-            <id>claremontqualitymanagement</id>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </snapshots>
-            <url>https://github.com/claremontqualitymanagement/TestAutomationFramework</url>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -78,78 +60,12 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <!--
-    <distributionManagement>
-        <repository>
-            <id>com.github.claremontqualitymanagement.TestAutomationFramework</id>
-            <name>TestAutomationFramework</name>
-            <url>https://github.com/claremontqualitymanagement/TestAutomationFramework</url>
-        </repository>
-    </distributionManagement>
--->
     <dependencies>
-        <!-- log4j
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.21</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.21</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.53</version>
-        </dependency>
-        -->
 
         <!-- Jetty (Light weight web server) -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${capability.jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>${capability.jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-            <version>${capability.jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-http</artifactId>
-            <version>${capability.jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-io</artifactId>
-            <version>${capability.jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-security</artifactId>
             <version>${capability.jetty.version}</version>
         </dependency>
         <dependency>
@@ -161,40 +77,9 @@
         <!-- Jersey HTTP manager -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
             <version>${capability.glassfish.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.bundles.repackaged</groupId>
-            <artifactId>jersey-guava</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-jetty-http</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-            <version>${capability.glassfish.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.glassfish.jersey/jax-rs-ri -->
         <dependency>
             <groupId>org.glassfish.jersey</groupId>
             <artifactId>jax-rs-ri</artifactId>
@@ -207,52 +92,10 @@
             <artifactId>hk2-core</artifactId>
             <version>${capability.hk2.version}</version>
         </dependency>
-        <dependency> <!-- Needed? -->
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
-            <version>${capability.hk2.version}</version>
-        </dependency>
-        <dependency> <!-- Needed? -->
+        <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
             <version>${capability.hk2.version}</version>
-        </dependency>
-        <dependency> <!-- Needed? -->
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-locator</artifactId>
-            <version>${capability.hk2.version}</version>
-        </dependency>
-        <dependency> <!-- Needed? -->
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-utils</artifactId>
-            <version>${capability.hk2.version}</version>
-        </dependency>
-
-        <!-- JavaX -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.2-b02</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
         </dependency>
 
         <!-- JSON object mapper -->
@@ -271,6 +114,7 @@
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
         <!-- Used to propagate test results to Testlink -->
         <dependency>
             <groupId>br.eti.kinoshita</groupId>
@@ -286,27 +130,19 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- TAF, needed for JSON to object mapping
-        <dependency>
-            <groupId>com.github.claremontqualitymanagement</groupId>
-            <artifactId>TestAutomationFramework</artifactId>
-            <version>2.6.9</version>
-            <scope>test</scope>
-        </dependency>
-        -->
-
         <!-- For conversion errors -->
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
             <version>1.6</version>
         </dependency>
-        <!-- For NestableRuntimeException -->
+        <!-- For NestableRuntimeException
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
+        -->
 
     </dependencies>
 
