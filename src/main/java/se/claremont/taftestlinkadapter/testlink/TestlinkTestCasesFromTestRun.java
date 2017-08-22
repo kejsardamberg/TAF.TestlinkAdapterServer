@@ -9,7 +9,7 @@ import java.util.ArrayList;
  *
  * Created by jordam on 2017-03-26.
  */
-class TestlinkTestCasesFromTestRun {
+public class TestlinkTestCasesFromTestRun {
     @JsonProperty ArrayList<TestlinkTestCaseMapper> testCases = new ArrayList<>();
 
     /**

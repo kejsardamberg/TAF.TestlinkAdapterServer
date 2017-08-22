@@ -84,7 +84,7 @@ public class TestRunRegistration {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         Date now = new Date();
         debugLog.append(sdf.format(now)).append("   ").append(message).append(System.lineSeparator());
-        logToDebugLog(sdf.format(now) + "   " + message);
+        //logToDebugLog(sdf.format(now) + "   " + message);
     }
 
     /**
