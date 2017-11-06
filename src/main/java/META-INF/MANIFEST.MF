@@ -1,0 +1,53 @@
+Manifest-Version: 1.0
+Class-Path: websocket-api-9.4.3.v20170317.jar xercesImpl-2.11.0.jar je
+ rsey-common-2.23.2.jar jersey-container-servlet-core-2.23.2.jar cglib
+ -nodep-3.2.4.jar selenium-ie-driver-3.4.0.jar cssparser-0.9.22.jar ma
+ il-1.4.jar jna-4.2.2.jar jackson-databind-2.6.3.jar selenium-api-3.4.
+ 0.jar jetty-util-9.4.2.v20170220.jar commons-exec-1.3.jar junit-4.12.
+ jar jcommander-1.48.jar jetty-servlet-9.4.2.v20170220.jar hk2-api-2.5
+ .0-b36.jar commons-logging-1.2.jar commons-lang-2.6.jar commons-colle
+ ctions-3.2.1.jar TestingCapabilityJson-2.6.9.jar selenium-edge-driver
+ -3.4.0.jar okio-1.11.0.jar osgi-resource-locator-1.0.1.jar j2ssh-comm
+ on-0.2.9.jar httpclient-4.5.3.jar ant-jsch-1.6.5.jar guava-21.0.jar a
+ opalliance-repackaged-2.5.0-b36.jar jersey-server-2.23.2.jar jetty-se
+ curity-9.4.2.v20170220.jar config-types-2.5.0-b36.jar commons-configu
+ ration2-2.1.1.jar javax.inject-2.5.0-b05.jar selenium-remote-driver-3
+ .4.0.jar sac-1.3.jar jboss-logging-3.2.1.Final.jar commons-lang3-3.5.
+ jar jna-platform-4.1.0.jar jax-rs-ri-2.0-rc1.jar jersey-client-2.23.2
+ .jar hk2-runlevel-2.5.0-b36.jar jetty-http-9.4.2.v20170220.jar TestAu
+ tomationFramework-2.6.9.jar snakeyaml-1.15.jar mysql-connector-java-5
+ .1.6.jar jcip-annotations-1.0.jar commons-digester-1.8.jar ws-commons
+ -util-1.0.2.jar selenium-support-3.4.0.jar class-model-2.5.0-b36.jar 
+ htmlunit-driver-2.26.jar websocket-client-9.4.3.v20170317.jar htmluni
+ t-core-js-2.26.jar jersey-guava-2.23.2.jar httpcore-4.4.6.jar neko-ht
+ mlunit-2.25.jar jsoup-1.10.2.jar config-1.3.1.jar selenium-opera-driv
+ er-3.4.0.jar hk2-core-2.5.0-b36.jar servlet-api-2.4.jar selenium-chro
+ me-driver-3.4.0.jar hk2-utils-2.5.0-b36.jar commons-beanutils-1.7.0.j
+ ar selenium-common-2.0b1.jar jersey-container-jetty-http-2.23.2.jar h
+ tmlunit-2.26.jar slf4j-log4j12-1.7.21.jar websocket-common-9.4.3.v201
+ 70317.jar gson-2.8.0.jar selenium-safari-driver-3.4.0.jar jsch-0.1.53
+ .jar httpmime-4.5.3.jar javax.annotation-api-1.2-b02.jar webdriverman
+ ager-1.6.2.jar javax.inject-1.jar xml-apis-1.0.b2.jar classmate-1.1.0
+ .jar validation-api-1.0.0.GA.jar xmlrpc-client-3.1.3.jar TafFull-2.6.
+ 9.jar hk2-config-2.5.0-b36.jar jackson-annotations-2.6.3.jar tiger-ty
+ pes-1.4.jar xmlrpc-common-3.1.3.jar commons-codec-1.9.jar selenium-se
+ rver-3.4.0.jar json-20160810.jar commons-io-2.5.jar slf4j-api-1.7.21.
+ jar jetty-repacked-9.4.1.v20170120.jar serializer-2.7.2.jar jackson-c
+ ore-2.6.3.jar Core-2.6.9.jar selenium-firefox-driver-3.4.0.jar Techno
+ logiesSupport-2.6.9.jar commons-configuration-1.6.jar jetty-io-9.4.2.
+ v20170220.jar hk2-2.5.0-b36.jar TestingCapabilityJavaGui-2.6.9.jar hi
+ bernate-validator-5.2.4.Final.jar j2ssh-daemon-0.2.9.jar jetty-contin
+ uation-9.4.2.v20170220.jar commons-compress-1.9.jar TestingCapability
+ Web-2.6.9.jar log4j-api-2.6.2.jar phantomjsdriver-1.0.1.jar j2ssh-cor
+ e-0.2.2.jar javax.servlet-api-3.1.0.jar hk2-locator-2.5.0-b36.jar Tes
+ tingCapabilityRestApi-2.6.9.jar javax.ws.rs-api-2.0.1.jar log4j-core-
+ 2.6.2.jar jetty-server-9.4.2.v20170220.jar jcifs-1.3.17.jar jersey-me
+ dia-jaxb-2.23.2.jar jarchivelib-0.7.1.jar jetty-client-9.4.3.v2017031
+ 7.jar commons-beanutils-core-1.8.0.jar phantomjsdriver-1.4.0.jar asm-
+ all-repackaged-2.5.0-b36.jar proguard-base-5.3.2.jar javassist-3.20.0
+ -GA.jar hamcrest-core-1.3.jar xalan-2.7.2.jar log4j-1.2.17.jar jersey
+ -container-servlet-2.23.2.jar activation-1.1.jar testlink-java-api-1.
+ 9.16-1.jar selenium-java-3.4.0.jar platform-3.5.2.jar okhttp-3.4.1.ja
+ r
+Main-Class: se.claremont.taftestlinkadapter.server.App
+
