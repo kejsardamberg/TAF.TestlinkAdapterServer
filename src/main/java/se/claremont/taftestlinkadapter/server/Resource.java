@@ -28,7 +28,7 @@ public class Resource {
     @Produces(MediaType.TEXT_HTML)
     public String versionHtml() {
         System.out.println("Got a request for version.");
-        return InfoPage.toHtml("<p>TAF Testlink Adapter Server code version 1.1.<br><br>Try a GET request to <i>'/apiversion'</i> for supported API version.</p>");
+        return InfoPage.toHtml("<p>TAF Testlink Adapter Server code version " + Settings.currentTestlinkAdapterServerVersion + ".<br><br>Try a GET request to <i>'/apiversion'</i> for supported API version.</p>");
     }
 
     /**
@@ -42,7 +42,7 @@ public class Resource {
     @Produces(MediaType.TEXT_PLAIN)
     public String versionPlainText() {
         System.out.println("Got a request for version.");
-        return "TAF Testlink Adapter Server code version 0.1.";
+        return "TAF Testlink Adapter Server code version " + Settings.currentTestlinkAdapterServerVersion + ".";
     }
 
     /**

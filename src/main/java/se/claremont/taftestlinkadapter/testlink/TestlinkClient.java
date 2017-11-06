@@ -50,6 +50,9 @@ public class TestlinkClient {
             es.shutdownNow();
             System.out.print(System.lineSeparator() + "Connection attempt timed out.");
         } catch (ExecutionException | InterruptedException e) {
+            future.cancel(true);
+            f.cancel(true);
+            es.shutdownNow();
             System.out.print(System.lineSeparator());
             System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
             System.out.println(e.getMessage() + System.lineSeparator());

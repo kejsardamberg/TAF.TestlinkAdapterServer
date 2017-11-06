@@ -24,7 +24,7 @@ public class AboutPage {
                 "<tr><td>Listening for incoming TAF test run data on port:</td><td>" + Settings.port + "</td></tr>" +
                 "<tr><td>Current IP address of this TAF Testlink Adapter Server:</td><td>" + HttpServer.getIPAddressesOfLocalMachine() + "</td></tr>" +
                 "</table>" +
-                "<p><a href=\"taftestlinkadapter/version\">Software version</a>" +
+                "<p><a href=\"taftestlinkadapter/version\">Software version " + Settings.currentTestlinkAdapterServerVersion + "</a>" +
                 "</p><p><a href=\"taftestlinkadapter/apiversion\">Implemented API version</a></p>" +
                 "<h2>About TAF</h2><p>" +
                 "TAF is an open source test automation framework to quickly get going with robust " +

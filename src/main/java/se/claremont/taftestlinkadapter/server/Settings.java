@@ -8,6 +8,11 @@ package se.claremont.taftestlinkadapter.server;
 public class Settings {
 
     /**
+     * Current Testlink Adapter Server version
+     */
+    public static String currentTestlinkAdapterServerVersion = "1.2";
+
+    /**
      * The API version need to be updated when relevant structural changes to TAF occurs.
      */
     public static String currentApiVersion = "v1";
