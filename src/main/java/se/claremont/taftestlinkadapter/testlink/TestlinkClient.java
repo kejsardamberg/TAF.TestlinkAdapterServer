@@ -36,31 +36,41 @@ public class TestlinkClient {
      * @return Return a session to the Testlink API
      */
     private static TestLinkAPI getTestlinkApiConnection() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
         TestLinkAPI client = null;
-        Future<TestLinkAPI> future = executor.submit(new TestlinkConnection());
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        Future f = es.submit(new DotPrinter());
+        ExecutorService testlinkApiClientExecutor = Executors.newSingleThreadExecutor();
+        ExecutorService dotPrinterExecutor        = Executors.newSingleThreadExecutor();
+        Future<TestLinkAPI> testLinkAPIFuture = testlinkApiClientExecutor.submit(new TestlinkConnection());
+        Future dotPrinter = dotPrinterExecutor.submit(new DotPrinter());
         try {
             Integer timeoutInSeconds = Integer.parseInt(Settings.testlinkServerConnectionTimeoutInSeconds);
-            client = future.get(timeoutInSeconds, TimeUnit.SECONDS);
+            client = testLinkAPIFuture.get(timeoutInSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            future.cancel(true);
-            f.cancel(true);
-            es.shutdownNow();
+            if(!testLinkAPIFuture.isCancelled())
+                testLinkAPIFuture.cancel(true);
+            if(!dotPrinter.isCancelled())
+                dotPrinter.cancel(true);
+            if(!dotPrinterExecutor.isShutdown())
+                dotPrinterExecutor.shutdownNow();
             System.out.print(System.lineSeparator() + "Connection attempt timed out.");
         } catch (ExecutionException | InterruptedException e) {
-            future.cancel(true);
-            f.cancel(true);
-            es.shutdownNow();
+            if(!testLinkAPIFuture.isCancelled()) testLinkAPIFuture.cancel(true);
+            if(!dotPrinter.isCancelled()) dotPrinter.cancel(true);
+            if(!dotPrinterExecutor.isShutdown())
+                dotPrinterExecutor.shutdownNow();
             System.out.print(System.lineSeparator());
             System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
             System.out.println(e.getMessage() + System.lineSeparator());
         } finally {
-            f.cancel(true);
-            es.shutdownNow();
+            if(!dotPrinter.isCancelled())
+                dotPrinter.cancel(true);
+            if(!dotPrinterExecutor.isShutdown())
+                dotPrinterExecutor.shutdownNow();
         }
-        executor.shutdownNow();
+        if(!dotPrinter.isCancelled())
+            dotPrinter.cancel(true);
+        if(!dotPrinterExecutor.isShutdown())
+            dotPrinterExecutor.shutdownNow();
+        if(!testlinkApiClientExecutor.isShutdown()) testlinkApiClientExecutor.shutdownNow();
         System.out.print(System.lineSeparator());
         return client;
     }

@@ -497,8 +497,11 @@ public class TestRunRegistration {
      */
     private Build identifyBuild(TestPlan testPlan) {
         Build[] builds = testlinkReporter.api.api.getBuildsForTestPlan(testPlan.getId());
+        if(builds == null || builds.length == 0){
+            System.out.println("No build found for this test plan. Need a build to report test results to. Creating a build called '" + Settings.defaultBuildNameForNewTestCases + "' for Testlink test plan '" + testPlan.getName() + "' (test plan id=" + testPlan.getId() + ").");
+            return testlinkReporter.api.api.createBuild(testPlan.getId(), Settings.defaultBuildNameForNewTestCases, "Automatically created from TAF Testlink adapter server.");
+        }
         if(builds.length == 1) return builds[0];
-        if(builds.length == 0) return testlinkReporter.api.api.createBuild(testPlan.getId(), Settings.defaultBuildNameForNewTestCases, "Automatically created from TAF Testlink adapter server.");
         return testlinkReporter.api.api.getLatestBuildForTestPlan(testPlan.getId());
     }
 
