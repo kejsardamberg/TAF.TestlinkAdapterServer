@@ -44,34 +44,36 @@ public class TestlinkClient {
         ExecutorService testlinkApiClientExecutor = Executors.newSingleThreadExecutor();
         ExecutorService dotPrinterExecutor        = Executors.newSingleThreadExecutor();
         Future<TestLinkAPI> testLinkAPIFuture = testlinkApiClientExecutor.submit(new TestlinkConnection());
-        Future dotPrinter = dotPrinterExecutor.submit(new DotPrinter());
+        //Future dotPrinter = dotPrinterExecutor.submit(new DotPrinter());
         try {
             Integer timeoutInSeconds = Integer.parseInt(Settings.testlinkServerConnectionTimeoutInSeconds);
             client = testLinkAPIFuture.get(timeoutInSeconds, TimeUnit.SECONDS);
+//            dotPrinter.cancel(true);
+            dotPrinterExecutor.shutdownNow();
         } catch (TimeoutException e) {
             if(!testLinkAPIFuture.isCancelled())
                 testLinkAPIFuture.cancel(true);
-            if(!dotPrinter.isCancelled())
-                dotPrinter.cancel(true);
+//            if(!dotPrinter.isCancelled())
+//                dotPrinter.cancel(true);
             if(!dotPrinterExecutor.isShutdown())
                 dotPrinterExecutor.shutdownNow();
             System.out.print(System.lineSeparator() + "Connection attempt timed out.");
         } catch (ExecutionException | InterruptedException e) {
             if(!testLinkAPIFuture.isCancelled()) testLinkAPIFuture.cancel(true);
-            if(!dotPrinter.isCancelled()) dotPrinter.cancel(true);
+  //          if(!dotPrinter.isCancelled()) dotPrinter.cancel(true);
             if(!dotPrinterExecutor.isShutdown())
                 dotPrinterExecutor.shutdownNow();
             System.out.print(System.lineSeparator());
             System.out.println(System.lineSeparator() + "OUPS! Failed to connect to Testlink server. Error:");
             System.out.println(e.getMessage() + System.lineSeparator());
         } finally {
-            if(!dotPrinter.isCancelled())
-                dotPrinter.cancel(true);
+//            if(!dotPrinter.isCancelled())
+//                dotPrinter.cancel(true);
             if(!dotPrinterExecutor.isShutdown())
                 dotPrinterExecutor.shutdownNow();
         }
-        if(!dotPrinter.isCancelled())
-            dotPrinter.cancel(true);
+//        if(!dotPrinter.isCancelled())
+//            dotPrinter.cancel(true);
         if(!dotPrinterExecutor.isShutdown())
             dotPrinterExecutor.shutdownNow();
         if(!testlinkApiClientExecutor.isShutdown()) testlinkApiClientExecutor.shutdownNow();
@@ -98,9 +100,9 @@ public class TestlinkClient {
             while(!Thread.currentThread().isInterrupted()){
                 try {
                     Thread.sleep(1000); //exclude try/catch for brevity
+                    System.out.print(".");
                 } catch (InterruptedException ignored) {
                 }
-                System.out.print(".");
             }
         }
     }
