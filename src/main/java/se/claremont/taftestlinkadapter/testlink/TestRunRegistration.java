@@ -190,7 +190,7 @@ public class TestRunRegistration {
                     testCaseMatch.testCase.getPlatform().getId(),
                     xmlSafeString(testCaseMatch.testCase.getPlatform().getName()),
                     null,
-                    true);
+                    false);
         } catch (Exception e) {
             return "Could not report test case '" + testCase.testSetName + "/" + testCase.testName + "' to '" + testCaseMatch.testCase.toString() + "'. Results: " + e.getMessage() + System.lineSeparator();
         }
