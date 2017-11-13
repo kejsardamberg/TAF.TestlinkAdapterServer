@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * TAF test run registration. Tries to push the result of every test case
@@ -53,6 +54,8 @@ public class TestRunRegistration {
         reportTestCases(testlinkTestCasesFromTestRun);
         log("Reported all test cases.");
     }
+
+    //Todo: Test cases being created does not get a test result on first run, but subsequent ones work fine.
 
     /**
      * Add a log message to the unified logging
@@ -137,7 +140,11 @@ public class TestRunRegistration {
      * @param testlinkTestCase The test case instance in Testlink
      */
     private void markTestCaseAsAutomatedIfItIsNotAlreadyMarkedAsAutomated(TestCaseMatch testlinkTestCase) {
-        if (testlinkTestCase.testCase.getExecutionType().equals(ExecutionType.AUTOMATED)) return;
+        if (
+                testlinkTestCase != null &&
+                testlinkTestCase.testCase != null &&
+                testlinkTestCase.testCase.getExecutionType() != null &&
+                testlinkTestCase.testCase.getExecutionType().equals(ExecutionType.AUTOMATED)) return;
         try {
             testlinkReporter.api.api.setTestCaseExecutionType(
                     testlinkTestCase.projectId,
@@ -160,23 +167,12 @@ public class TestRunRegistration {
      */
     private String postTestCaseResultToTestlink(TestCaseMatch testCaseMatch, TestlinkTestCaseMapper testCase) {
         ReportTCResultResponse results;
-        String platformName = null;
-        Integer platformId = null;
-        Platform platform = testCaseMatch.testCase.getPlatform();
-        if (platform != null) {
-            try {
-                platformName = platform.getName();
-                platformId = platform.getId();
-            } catch (Exception e) {
-                System.out.println("Could not retrieve platfom from Testlink test case.");
-            }
-        }
-        Integer testCaseExternalId = null;
         try {
             Integer.parseInt(testCaseMatch.testCase.getFullExternalId());
         } catch (Exception ignored) {
         }
         try {
+            //TestCase testCaseToUse = testlinkReporter.api.api.getTestCase(testCaseMatch.testCase.getId(), null, null);
             results = testlinkReporter.api.api.reportTCResult(
                     testCaseMatch.testCase.getId(),
                     null,
@@ -260,7 +256,10 @@ public class TestRunRegistration {
         List<TestCase> potentialTestCaseMatchesMarkedAsAutomated = new ArrayList<>();
         for (TestCase potentialMatch : potentialMatches) {
             try {
-                if (potentialMatch.getExecutionType().equals(ExecutionType.AUTOMATED)) {
+                if (
+                        potentialMatch != null &&
+                        potentialMatch.getExecutionType() != null &&
+                        potentialMatch.getExecutionType().equals(ExecutionType.AUTOMATED)) {
                     potentialTestCaseMatchesMarkedAsAutomated.add(potentialMatch);
                 }
             } catch (Exception e) {
@@ -529,9 +528,10 @@ public class TestRunRegistration {
 
         TestPlan testPlan = identifyTestPlan(testProject, testCase);
 
+        Platform platform = identifyPlatform(testProject, testPlan);
+
         Build build = identifyBuild(testPlan);
 
-        //Platform platform = identifyPlatform(testProject, testPlan);
 
         log("Creating a new test case called '" + testCase.testName + "' in test project '" + testProject.getName() + "', and test suite '" + testSuite.getName() + "'.");
 
@@ -554,11 +554,7 @@ public class TestRunRegistration {
 
         log("Created '" + testlinkTestCase.toString() + "'. Adding it to test plan '" + testPlan.getName() + "'.");
 
-        Integer platformId = null;
-        Platform platform = testlinkTestCase.getPlatform();
-        if (platform != null) {
-            platformId = platform.getId();
-        }
+        //platform = testlinkTestCase.getPlatform();
 
         Integer version = testlinkTestCase.getVersion();
 
@@ -567,7 +563,7 @@ public class TestRunRegistration {
                 testPlan.getId(),
                 testlinkTestCase.getId(),
                 version,
-                platformId,
+                platform.getId(),
                 null,
                 null);
 
@@ -578,6 +574,15 @@ public class TestRunRegistration {
                 testProject.getId(),
                 build.getId(),
                 build.getName());
+    }
+
+    private Platform identifyPlatform(TestProject testProject, TestPlan testPlan) {
+        Platform[] testPlanPlatforms = testlinkReporter.api.api.getTestPlanPlatforms(testPlan.getId());
+        if(testPlanPlatforms == null || testPlanPlatforms.length == 0){
+            log("Creating platform '" + Settings.defaultPlatformNameForNewTestCases + "' and adding it to test plan.");
+            Map<String, Object> response = testlinkReporter.api.api.addPlatformToTestPlan(testProject.getId(), testPlan.getId(), Settings.defaultPlatformNameForNewTestCases);
+        }
+        return testlinkReporter.api.api.getTestPlanPlatforms(testPlan.getId())[0];
     }
 
     /**
@@ -591,7 +596,10 @@ public class TestRunRegistration {
         Build[] builds = testlinkReporter.api.api.getBuildsForTestPlan(testPlan.getId());
         if (builds == null || builds.length == 0) {
             System.out.println("No build found for this test plan. Need a build to report test results to. Creating a build called '" + Settings.defaultBuildNameForNewTestCases + "' for Testlink test plan '" + testPlan.getName() + "' (test plan id=" + testPlan.getId() + ").");
-            Build build = testlinkReporter.api.api.createBuild(testPlan.getId(), Settings.defaultBuildNameForNewTestCases, "Automatically created from TAF Testlink adapter server.");
+            Build build = testlinkReporter.api.api.createBuild(
+                    testPlan.getId(),
+                    Settings.defaultBuildNameForNewTestCases,
+                    "Automatically created from TAF Testlink adapter server.");
             return build;
         }
         if (builds.length == 1) return builds[0];
@@ -617,12 +625,9 @@ public class TestRunRegistration {
         } catch (Exception e) {
             System.out.println("Could not get any test plans for project '" + testProject.toString());
         }
-        if (testPlansForThisProject == null) {
-            System.out.println("Could not find any test plans for project '" + testProject.toString());
-            return null;
-        }
 
         if (testPlansForThisProject == null || testPlansForThisProject.length == 0) {
+            System.out.println("Could not find any test plans for project '" + testProject.toString());
             TestPlan testPlan = testlinkReporter.api.api.createTestPlan(
                     Settings.defaultTestPlanName,
                     testProject.getName(),
@@ -632,12 +637,24 @@ public class TestRunRegistration {
             cache.testPlans.add(testPlan);
             return testPlan;
         }
+
         //If this test project only contains one test plan this should be returned
         if (testPlansForThisProject.length == 1) return testPlansForThisProject[0];
 
         //If a TestPlan contains a TestCase with correct name, return it
         for (TestPlan testPlan : testPlansForThisProject) {
-            TestCase[] testCasesForTestPlan = testlinkReporter.api.api.getTestCasesForTestPlan(testPlan.getId(), null, null, null, null, null, null, null, null, null, null);
+            TestCase[] testCasesForTestPlan = testlinkReporter.api.api.getTestCasesForTestPlan(
+                    testPlan.getId(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
             for (TestCase foundTestCase : testCasesForTestPlan) {
                 if (foundTestCase.getName().equals(testCase.testName)) {
                     return testPlan;
@@ -646,7 +663,12 @@ public class TestRunRegistration {
         }
 
         //Else create a new test plan
-        TestPlan newTestPlan = testlinkReporter.api.api.createTestPlan(Settings.defaultTestPlanName, testProject.getName(), null, true, true);
+        TestPlan newTestPlan = testlinkReporter.api.api.createTestPlan(
+                Settings.defaultTestPlanName,
+                testProject.getName(),
+                null,
+                true,
+                true);
         cache.testPlans.add(newTestPlan);
         return newTestPlan;
     }
@@ -675,13 +697,24 @@ public class TestRunRegistration {
                 }
             }
         }
+
         updateDefaultTestSuiteStatus(testProject.getId());
+
+
         //Create default test test suite for orphan test cases if needed
         if (!defaultTestSuiteFound) {
-            TestSuite newlyCreatedDefaultTestSuite = testlinkReporter.api.api.createTestSuite(testProject.getId(), Settings.defaultTestSuiteNameForNewTestCases, null, null, null, null, null);
+            TestSuite newlyCreatedDefaultTestSuite = testlinkReporter.api.api.createTestSuite(
+                    testProject.getId(),
+                    Settings.defaultTestSuiteNameForNewTestCases,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
             cache.testSuites.add(newlyCreatedDefaultTestSuite);
             defaultTestSuiteId = newlyCreatedDefaultTestSuite.getId();
         }
+
         //If a test suite with the same name as the test set exist, return it
         TestSuite[] automationTestSuites = testlinkReporter.api.api.getTestSuitesForTestSuite(defaultTestSuiteId);
         for (TestSuite testSuite : automationTestSuites) {
@@ -689,8 +722,16 @@ public class TestRunRegistration {
                 return testSuite;
             }
         }
+
         //Else create it and return it
-        TestSuite newlyCreatedTestSuite = testlinkReporter.api.api.createTestSuite(testProject.getId(), testCase.testSetName, null, defaultTestSuiteId, null, null, null);
+        TestSuite newlyCreatedTestSuite = testlinkReporter.api.api.createTestSuite(
+                testProject.getId(),
+                testCase.testSetName,
+                null,
+                defaultTestSuiteId,
+                null,
+                null,
+                null);
         cache.testSuites.add(newlyCreatedTestSuite);
         return newlyCreatedTestSuite;
     }
@@ -728,7 +769,16 @@ public class TestRunRegistration {
                 }
             }
             //Othervice create a new default TestProject in Testlink
-            TestProject newlyCreatedTestProject = testlinkReporter.api.api.createTestProject(Settings.defaultTestProjectNameForNewTestCases, "ZX", "Automatically created for test automation test cases that cannot be identified already", true, true, true, true, true, true);
+            TestProject newlyCreatedTestProject = testlinkReporter.api.api.createTestProject(
+                    Settings.defaultTestProjectNameForNewTestCases,
+                    "ZX",
+                    "Automatically created for test automation test cases that cannot be identified already",
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true);
             cache.testProjects.add(newlyCreatedTestProject);
             return newlyCreatedTestProject;
         }

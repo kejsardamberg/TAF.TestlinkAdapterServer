@@ -38,6 +38,7 @@ public class TestlinkElementCache {
         return returnString + System.lineSeparator() + "Cache status: " + System.lineSeparator() + " * " + testProjects.size() + " test projects" + System.lineSeparator() + " * " + testSuites.size() + " test suites" + System.lineSeparator() + " * " + testPlans.size() + " test plans" + System.lineSeparator() + " * " + testCases.size() + " test cases";
     }
 
+
     /**
      * Updates the test cases in this cache
      */
