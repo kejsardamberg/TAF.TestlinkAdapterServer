@@ -1,9 +1,6 @@
 package se.claremont.taftestlinkadapter.testlink;
 
-import br.eti.kinoshita.testlinkjavaapi.model.TestCase;
-import br.eti.kinoshita.testlinkjavaapi.model.TestPlan;
-import br.eti.kinoshita.testlinkjavaapi.model.TestProject;
-import br.eti.kinoshita.testlinkjavaapi.model.TestSuite;
+import br.eti.kinoshita.testlinkjavaapi.model.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +15,7 @@ public class TestlinkElementCache {
     List<TestSuite> testSuites = new ArrayList<>();
     List<TestCase> testCases = new ArrayList<>();
     private TestlinkReporter testlinkReporter;
+    List<Platform> platforms = new ArrayList<>();
 
     TestlinkElementCache(){
 

@@ -30,6 +30,10 @@ public class TestlinkClient {
         }
     }
 
+    public void disconnect(){
+        api = null;
+    }
+
     /**
      * Attempts setting up a connection to the Testlink API given by the runtime parameters.
      *

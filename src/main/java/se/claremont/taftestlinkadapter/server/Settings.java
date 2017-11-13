@@ -73,4 +73,5 @@ public class Settings {
      * the value for this parameter will be used as name for the new build.
      */
     public static String defaultBuildNameForNewTestCases = "Default automation build";
+    public static String defaultPlatformNameForNewTestCases = "Default";
 }
